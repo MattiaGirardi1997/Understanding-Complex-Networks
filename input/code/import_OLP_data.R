@@ -85,6 +85,7 @@ for(i in 1:length(OLP_essentials[, graphProperties])){
 
 OLP_essentials <- setnames(OLP_essentials, "graphProperties", "directed")
 OLP_essentials <- OLP_essentials[, -("title")]
+OLP_essentials$network_name <- tolower(OLP_essentials$network_name)
 
 write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
 
@@ -102,16 +103,18 @@ OLP_data <- OLP_data[order(OLP_data$title), ]
 OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
 
 OLP_data <- cbind(OLP_essentials[, "network_name"], OLP_data[, -c("title")])
+OLP_data$network_name <- tolower(OLP_data$network_name)
 
 for (i in 1:length(OLP_data[, edges_id])){
   OLP.network <- OLP_data[i, edges_id]
   OLP.converted <- convert.OLP(OLP.network)
   OLP.file <- as.character(OLP_data[i, "network_name"])
-  write.table(OLP.converted, file = sprintf("data/OLP_data/%s.csv", OLP.file),
+  write.table(OLP.converted, file = sprintf("data/OLP_data2/%s.csv", OLP.file),
               sep = ",", row.names = FALSE)
 }
 
 rm(list=ls())
+
 
 
 
