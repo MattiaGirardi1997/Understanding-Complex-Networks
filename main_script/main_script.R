@@ -37,12 +37,12 @@ rm(list = c("append.ICON.measures", "compute.ICON.measures",
 source("R/OLP_functions.R")
 
 # load in OLP data
-OLP.files <- list.files(path = "input/OLP_data", pattern = "*.csv", full.names = TRUE)
+OLP_files <- list.files(path = "data/OLP_data", pattern = "*.csv", full.names = TRUE)
 
 # compute network measure for OLP networks
 length(OLP.files)
 for(i in 1:length(OLP.files)){
-  OLP.network <- fread(OLP.files[i])
+  OLP.network <- fread(OLP_files[i])
   OLP.network.measures(OLP.network, i)
   rm(OLP.network)
 }
@@ -50,19 +50,19 @@ for(i in 1:length(OLP.files)){
 rm(list = c("append.OLP.measures", "compute.OLP.measures", "convert.OLP",
             "create.igraph.object.OLP", "OLP.network.measures"))
 
-####### Netzschleuder data
+####### Netzschleuder data (626 networks)
 # load in functions
 source("R/netzschleuder_functions.R")
 
 # load in Netzschleuder data
-netzschleuder.files <- list.files(path = "input/netzschleuder_data", pattern="*.csv", full.names=TRUE)
-netzschleuder_data <- fromJSON("input/import_datasets/netzschleuder_names.json")
+netzschleuder_files <- list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=TRUE)
+netzschleuder_data <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
 
-# compute network measure for Netzschleuder networks (641 networks)
+# compute network measure for Netzschleuder networks 
 for(i in 1:length(netzschleuder.files)){
-  netzschleuder.network <- fread(netzschleuder.files[i])
-  NS.network.measures(netzschleuder.network, i, path = "output/netzschleuder_measures.csv")
-  rm(netzschleuder.network)
+  netzschleuder_network <- fread(netzschleuder_files[i])
+  NS.network.measures(netzschleuder_network, i, path = "output/netzschleuder_measures.csv")
+  rm(netzschleuder_network)
 }
 
 i <- 2

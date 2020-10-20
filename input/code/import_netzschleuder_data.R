@@ -1,5 +1,5 @@
 ##########################################
-## Creating edgelist files for Netzschleuder networks
+## Importing Netzschleuder data
 ## Mattia Girardi
 ## 20.09.2020
 #########################################
@@ -14,12 +14,13 @@ sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
 
 # read in data and covert to edgelist
-A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44, 46:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113, 120, 123, 132, 133,
-       137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167, 171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 204, 206, 208:215, 218, 219, 221, 222, 223, 226, 227, 228, 229, 231,
-       233, 235, 237, 239, 245, 247:254, 259, 261)
+A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113,
+       120, 123, 132, 133, 137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167,
+       171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222, 223, 226,
+       227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
 
-netzschleuder_names <- fromJSON("input/netzschleuder_data/netzschleuder_names.json")
-netzschleuder_complete <- fromJSON("input/netzschleuder_data/netzschleuder_complete.json")
+netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
+netzschleuder_complete <- fromJSON("data/netzschleuder_data/netzschleuder_complete.json")
 
 for (i in (1:length(netzschleuder_names))[-A]){
   if (length(netzschleuder_complete[[i]][["nets"]]) == 1){
@@ -29,7 +30,7 @@ for (i in (1:length(netzschleuder_names))[-A]){
     data <- read.csv(unz(temp, "edges.csv"))[, 1:2]
     data[, 1] = data[, 1] + 1
     data[, 2] = data[, 2] + 1
-    write.table(data[, 1:2], file = sprintf("input/Netzschleuder_data/%s.csv", schleuder.network),
+    write.table(data[, 1:2], file = sprintf("data/netzschleuder_data/%s.csv", schleuder.network),
                 sep = ",", row.names = FALSE, col.names = c("Node1", "Node2"))
     unlink(temp)
     rm(data)
@@ -42,7 +43,7 @@ for (i in (1:length(netzschleuder_names))[-A]){
       data <- read.csv(unz(temp, "edges.csv"))[, 1:2]
       data[, 1] = data[, 1] + 1
       data[, 2] = data[, 2] + 1
-      write.table(data[, 1:2], file = sprintf("input/Netzschleuder_data/%s_%s.csv", schleuder.network, schleuder.sub.network),
+      write.table(data[, 1:2], file = sprintf("data/netzschleuder_data/%s_%s.csv", schleuder.network, schleuder.sub.network),
                   sep = ",", row.names = FALSE, col.names = c("Node1", "Node2"))
       unlink(temp)
       rm(data)
@@ -63,16 +64,16 @@ for(i in 1:length(domains)){
   data.table <- as.data.table(fromJSON(temp))
   data.table[, networkDomain := c(file)]
   setnames(data.table, "V1", "network_name")
-  write.table(data.table, file = sprintf("input/netzschleuder_data/domains/netzschleuder_%s.csv", file), sep = ",", row.names = F)
+  write.table(data.table, file = sprintf("data/netzschleuder_data/domains/netzschleuder_%s.csv", file), sep = ",", row.names = F)
   rm(data.table, temp)
 }
 
 rm(list=ls())
 
 #### seperate Social from Social,Online/Social,Offline
-online <- fread("input/netzschleuder_data/domains/netzschleuder_Online.csv")
-offline <- fread("input/netzschleuder_data/domains/netzschleuder_Offline.csv")
-social <- fread("input/netzschleuder_data/domains/netzschleuder_Social.csv")
+online <- fread("data/netzschleuder_data/domains/netzschleuder_Online.csv")
+offline <- fread("data/netzschleuder_data/domains/netzschleuder_Offline.csv")
+social <- fread("data/netzschleuder_data/domains/netzschleuder_Social.csv")
 
 Gonline <- as.vector(online$network_name)
 Goffline <- as.vector(offline$network_name)
@@ -95,11 +96,11 @@ for(i in 1:length(Goffline)){
 
 social2 <- social[-c(my_list_offline, my_list_online)]
 
-biological <- fread("input/netzschleuder_data/domains/netzschleuder_Biological.csv")
-ecoomic <- fread("input/netzschleuder_data/domains/netzschleuder_Economic.csv")
-informational <-fread("input/netzschleuder_data/domains/netzschleuder_Informational.csv")
-technological <- fread("input/netzschleuder_data/domains/netzschleuder_Technological.csv")
-transportation <- fread("input/netzschleuder_data/domains/netzschleuder_Transportation.csv")
+biological <- fread("data/netzschleuder_data/domains/netzschleuder_Biological.csv")
+ecoomic <- fread("data/netzschleuder_data/domains/netzschleuder_Economic.csv")
+informational <-fread("data/netzschleuder_data/domains/netzschleuder_Informational.csv")
+technological <- fread("data/netzschleuder_data/domains/netzschleuder_Technological.csv")
+transportation <- fread("data/netzschleuder_data/domains/netzschleuder_Transportation.csv")
 
 netzschleuder_data <- rbind(social2, biological, ecoomic, informational, technological,
                             transportation, offline, online)
@@ -114,21 +115,22 @@ write.table(netzschleuder_data, file = "input/import_datasets/netzschleuder_data
 rm(list=ls())
 
 #### data table with file name, network domain and direction
-A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44, 46:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113, 120, 123, 132, 133,
-       137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167, 171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 204, 206, 208:215, 218, 219, 221, 222, 223, 226, 227, 228, 229, 231,
-       233, 235, 237, 239, 245, 247:254, 259, 261)
+A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113,
+       120, 123, 132, 133, 137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167,
+       171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222, 223, 226,
+       227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
 
-netzschleuder_names <- fromJSON("input/netzschleuder_data/netzschleuder_names.json")
+netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
 netzschleuder_names <- netzschleuder_names[-A]
 netzschleuder_names_sub <- sub("_", " ", netzschleuder_names)
 
 netzschleuder_data <- fread("input/import_datasets/netzschleuder_data.csv")
-netzschleuder_data <- netzschleuder_data[-20]
+netzschleuder_data <- netzschleuder_data[-206]
 netzschleuder_data <- netzschleuder_data[-A]
 
-netzschleuder_complete <- fromJSON("input/netzschleuder_data/netzschleuder_complete.json")
+netzschleuder_complete <- fromJSON("data/netzschleuder_data/netzschleuder_complete.json")
 
-netzschleuder_files <- as.vector(list.files(path = "input/netzschleuder_data", pattern="*.csv", full.names=F))
+netzschleuder_files <- as.vector(list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=F))
 netzschleuder_files <- sub(".csv", "", netzschleuder_files)
 netzschleuder_files_sub <- sub("_", " ", netzschleuder_files)
 
@@ -171,8 +173,6 @@ networkDomain <- c("Social,Online", "Social,Online", "Social,Online", "Biologica
                    "Social,Online", "Social,Online", "Social,Online")
 directed <- c("TRUE", "TRUE", "TRUE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "TRUE")
 
-?trans
-
 added_networks <- data.frame(network_name, networkDomain, directed)
 
 netzschleuder_essentials <- rbind(netzschleuder_essentials, added_networks)
@@ -190,8 +190,8 @@ rm(list=ls())
 ####
 
 #### adding number of edges to essential netzschleuder data
-netzschleuder_essentials <- fread(("input/import_datasets/netzschleuder_essentials.csv"))
-netzschleuder_files <- as.vector(list.files(path = "input/netzschleuder_data", pattern="*.csv", full.names=T))
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
+netzschleuder_files <- as.vector(list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=T))
 
 number_edges <- c()
 
@@ -209,6 +209,7 @@ write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleude
 rm(list=ls())
 
 #### Deleted networks from netzschleuder data
+netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
 
 # ambassador 8
 # arxiv_authors 10
@@ -221,6 +222,7 @@ rm(list=ls())
 # ceo_club 32
 # chess 33
 # crime 44
+# cs_department 45
 # dblp_author_paper 46
 # dblp_cite 47
 # dblp_coauthor 48
@@ -292,6 +294,7 @@ rm(list=ls())
 # rhesus_monkey 199
 # roadnet 200
 # route views 201
+## sa_companies 202
 # slashdot_threads 204
 # soc_net_comms_friendster 206, 1
 # soc_net_comms_livejournal 206, 2
@@ -333,12 +336,9 @@ rm(list=ls())
 # yahoo_song 259
 # zebras 261
 
-A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44, 46:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113, 120, 123, 132, 133,
-       137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167, 171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 204, 206, 208:215, 218, 219, 221, 222, 223, 226, 227, 228, 229, 231,
-       233, 235, 237, 239, 245, 247:254, 259, 261)
-
-
-
-
+A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113,
+       120, 123, 132, 133, 137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167,
+       171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222, 223, 226,
+       227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
 
 

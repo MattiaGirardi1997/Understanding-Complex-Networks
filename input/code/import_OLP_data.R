@@ -1,5 +1,5 @@
 ##########################################
-## Creating edgelist files for OLP networks
+## Importing OLP data
 ## Mattia Girardi
 ## 02.10.2020
 #########################################
@@ -77,9 +77,9 @@ OLP_essentials[, "graphProperties"] <- gsub(",", "", OLP_essentials$graphPropert
 length(OLP_essentials[, graphProperties])
 for(i in 1:length(OLP_essentials[, graphProperties])){
   if(length(grep("Directed", OLP_essentials[i, graphProperties],  OLP_essentials$graphProperties)) == 1){
-    OLP_essentials[i, "graphProperties"] <- sub(".*", "1", OLP_essentials[i, graphProperties])
+    OLP_essentials[i, "graphProperties"] <- sub(".*", "TRUE", OLP_essentials[i, graphProperties])
   } else {
-    OLP_essentials[i, "graphProperties"] <- sub(".*", "0", OLP_essentials[i, graphProperties])
+    OLP_essentials[i, "graphProperties"] <- sub(".*", "FALSE", OLP_essentials[i, graphProperties])
   }
 }
 
@@ -107,10 +107,11 @@ for (i in 1:length(OLP_data[, edges_id])){
   OLP.network <- OLP_data[i, edges_id]
   OLP.converted <- convert.OLP(OLP.network)
   OLP.file <- as.character(OLP_data[i, "network_name"])
-  write.table(OLP.converted, file = sprintf("input/OLP_data/%s.csv", OLP.file),
+  write.table(OLP.converted, file = sprintf("data/OLP_data/%s.csv", OLP.file),
               sep = ",", row.names = FALSE)
 }
 
 rm(list=ls())
+
 
 
