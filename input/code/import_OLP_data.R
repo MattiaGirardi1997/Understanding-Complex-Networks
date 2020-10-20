@@ -1,0 +1,116 @@
+##########################################
+## Creating edgelist files for OLP networks
+## Mattia Girardi
+## 02.10.2020
+#########################################
+
+# set working directory
+setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
+
+# install packages
+list.of.packages <- c("data.table", "BBmisc")
+install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
+sapply(list.of.packages, library, character.only = TRUE)
+rm(list.of.packages)
+
+##### create OLP data table with essential data
+OLP_complete <- fread("input/import_datasets/OLP_complete.csv")[, c("network_name", "networkDomain", "title", "graphProperties",
+                                                                    "number_edges")]
+
+OLP_complete[, "network_name"] <- OLP_complete[, "title"]
+OLP_complete[, "network_name"] <- gsub("_", " ", OLP_complete[, network_name])
+OLP_complete[, "network_name"] <- gsub("_&", "", OLP_complete[, network_name])
+
+write.table(OLP_complete, file = "input/import_datasets/OLP_essentials.csv", sep = ",", row.names = F)
+
+rm(list=ls())
+
+#### add indices to network names
+OLP_essentials_sub <- fread("input/import_datasets/OLP_essentials.csv")
+
+OLP_essentials_sub <- OLP_essentials_sub[order(OLP_essentials_sub$network_name), ]
+
+unique_networks <- unique(OLP_essentials_sub[, "network_name"])
+k <- 1
+rm(i, j)
+for(i in 1:length(unique_networks[, network_name])){
+  network <- as.character(unique_networks[i])
+  num <- length(agrep(network, OLP_essentials_sub$network_name))
+  if(num == 1){
+    k = k + 1
+  } else if (i %in% c(50, 62)) {
+    num <- length(grep(network, OLP_essentials_sub$network_name))
+    for(j in 1:num){
+      OLP_essentials_sub[k, "network_name"] <- gsub("$", sprintf("_%s", j), OLP_essentials_sub[k, network_name])
+      k = k + 1
+      rm(j)
+    }
+  } else if (i == 71) {
+    num <- length(grep(network, OLP_essentials_sub$network_name)) - 1
+    for(j in 1:num){
+      OLP_essentials_sub[k, "network_name"] <- gsub("$", sprintf("_%s", j), OLP_essentials_sub[k, network_name])
+      k = k + 1
+      rm(j)
+    }
+  } else if (i %in% c(10, 20, 23, 25, 39, 45, 47, 52, 53, 60, 64, 65, 72, 77, 85, 86, 88)){
+    k = k + 1
+  } else {
+    for(j in 1:num){
+      OLP_essentials_sub[k, "network_name"] <- gsub("$", sprintf("_%s", j), OLP_essentials_sub[k, network_name])
+      k = k + 1
+      rm(j)
+    }
+  }
+}
+
+OLP_essentials <- OLP_essentials_sub[order(OLP_essentials_sub$network_name), ]
+OLP_essentials[, "network_name"] <- gsub(" ", "_", OLP_essentials[, network_name])
+
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
+
+rm(list=ls())
+
+#### extract direction information from graph properties
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+OLP_essentials[, "graphProperties"] <- gsub(",", "", OLP_essentials$graphProperties)
+
+length(OLP_essentials[, graphProperties])
+for(i in 1:length(OLP_essentials[, graphProperties])){
+  if(length(grep("Directed", OLP_essentials[i, graphProperties],  OLP_essentials$graphProperties)) == 1){
+    OLP_essentials[i, "graphProperties"] <- sub(".*", "1", OLP_essentials[i, graphProperties])
+  } else {
+    OLP_essentials[i, "graphProperties"] <- sub(".*", "0", OLP_essentials[i, graphProperties])
+  }
+}
+
+OLP_essentials <- setnames(OLP_essentials, "graphProperties", "directed")
+OLP_essentials <- OLP_essentials[, -("title")]
+
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
+
+rm(list=ls())
+
+##########################
+#### load in OLP data files
+
+# load in function
+source("R/OLP_functions.R")
+
+#
+OLP_data <- fread("input/import_datasets/OLP_complete.csv")[, c("title", "edges_id")]
+OLP_data <- OLP_data[order(OLP_data$title), ]
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+
+OLP_data <- cbind(OLP_essentials[, "network_name"], OLP_data[, -c("title")])
+
+for (i in 1:length(OLP_data[, edges_id])){
+  OLP.network <- OLP_data[i, edges_id]
+  OLP.converted <- convert.OLP(OLP.network)
+  OLP.file <- as.character(OLP_data[i, "network_name"])
+  write.table(OLP.converted, file = sprintf("input/OLP_data/%s.csv", OLP.file),
+              sep = ",", row.names = FALSE)
+}
+
+rm(list=ls())
+
+
