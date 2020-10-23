@@ -115,6 +115,37 @@ for (i in 1:length(OLP_data[, edges_id])){
 
 rm(list=ls())
 
+#### deleting data after comparing datasets & eleting networks which do not represent true Social networks 
+#### (i.e. animal  networks, movie networks etc.)
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+OLP_essentials <- OLP_essentials[-c(57, 74:99, 202,  209:215, 252, 528:531)]
+
+# deleted "dolphin_social_network_(1994-2001)"
+# deleted "freshwater_stream_webs"
+# deleted "les_miserables_coappearances"
+# deleted "malaria_var_dbla_hvr_networks"
+# deleted "ncaa_college_football_2000"
+# deleted "webkb_graphs_(1998)"
+
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
+
+#### classifying Social networks (Offline and Online); some changes done directly in file
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+
+OLP_essentials[c(217:328, 344), "networkDomain"] <- gsub("Economic", "Social,Offline",
+                                                         OLP_essentials[c(217:328, 344), networkDomain])
+OLP_essentials[c(329:343, 345:440), "networkDomain"] <- gsub("Social", "Social,Offline",
+                                                         OLP_essentials[c(329:343, 345:440), networkDomain])
+
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
+
+
+
+
+
+
+
+
 
 
 

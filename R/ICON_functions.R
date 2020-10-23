@@ -11,7 +11,7 @@
 #' @export
 #' @import igraph
 create.igraph.object.ICON <- function(network){
-  if(ICON_data[i, Directed == 1]){
+  if(ICON_data[i, directed == TRUE]){
     graph_from_data_frame(network[, 1:2], directed = TRUE)
   } else {
     graph_from_data_frame(network[, 1:2], directed = FALSE)
@@ -28,8 +28,8 @@ create.igraph.object.ICON <- function(network){
 #' @import data.table
 compute.ICON.measures <- function(igraph.network, i){
   ID <- i
-  network.name <- as.character(ICON_data[i, Var_name])
-  domain <- as.character(ICON_data[i, `Network Domain`])
+  network.name <- as.character(ICON_data[i, network_name])
+  domain <- as.character(ICON_data[i, networkDomain])
   recipr <- reciprocity(igraph.network)
   if(is.null(recipr)){
     reciprocity <- NA
@@ -99,7 +99,7 @@ append.ICON.measures <- function(measures, i, path = "output/ICON_measures.csv")
 #' @export
 #' @import data.table
 ICON.network.measures <- function(network, i, path = "output/ICON_measures.csv"){
-  if(ICON_data[i, Directed == 1]){
+  if(ICON_data[i, directed == 1]){
     igraph.network <- create.igraph.object.ICON(network)
     measures <- compute.ICON.measures(igraph.network, i)
     append.ICON.measures(measures, i, path)

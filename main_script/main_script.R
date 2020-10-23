@@ -21,12 +21,13 @@ source("R/ICON_functions.R")
 ICON_data <- fread("input/import_datasets/ICON_data.csv")
 
 # compute network measure for ICON networks (47 networks)
-length(ICON_data[, Var_name])
-for(i in 1:4){
-  ICON.file <- ICON_data[i, Var_name]
-  ICON.network <- fread(sprintf("input/ICON_data/%s.csv", ICON.file))
-  ICON.network.measures(ICON.network, i, path = "output/ICON_measures_dir2.csv")
-  rm(ICON.network)
+for(i in 1:length(ICON_data[, network_name])){
+  ICON_file <- ICON_data[i, network_name]
+  load(sprintf("data/ICON_data/%s.rda", ICON_file))
+  ICON.network.measures(eval(parse(text = sprintf("%s", ICON_file))), i, path = "output/ICON_measures.csv")
+  objects_to_remove <- as.character(parse(text = sprintf("%s", ICON_file)))
+  rm(list = c("ICON_network", objects_to_remove))
+  rm(objects_to_remove)
 }
 
 rm(list = c("append.ICON.measures", "compute.ICON.measures",
