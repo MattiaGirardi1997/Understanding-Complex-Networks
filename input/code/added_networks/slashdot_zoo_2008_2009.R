@@ -16,7 +16,7 @@ network <- data.frame(network_name = "slashdot_zoo_2008", networkDomain = "Socia
 write.table(network, file = "input/import_datasets/added_networks.csv", row.names = F, sep = ",",
             append = T, col.names = F)
 
-# slashdot_zoo_2008
+# slashdot_zoo_2009
 slashdot_zoo_2009 <- fread("input/code/added_networks/slashdot_zoo_2009.txt")
 slashdot_zoo_2009 <- data.frame(Node1 = slashdot_zoo_2009$`# FromNodeId`, Node2 = slashdot_zoo_2009$ToNodeId)
 

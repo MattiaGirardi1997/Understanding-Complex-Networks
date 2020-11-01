@@ -84,7 +84,6 @@ netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.jso
 # rhesus_monkey 199
 # roadnet 200
 # route views 201
-## sa_companies 202
 # slashdot_threads 204
 # soc_net_comms_friendster 206, 1
 # soc_net_comms_livejournal 206, 2
@@ -99,7 +98,7 @@ netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.jso
 # sp_primary_school 215
 # swingers 218
 # terrorists_911 219
-# trackers 221
+# treckers 221
 # train_terrorists 222
 # trec 223
 # twitter_15m 226
@@ -130,3 +129,32 @@ A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87
        120, 123, 132, 133, 137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167,
        171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222, 223, 226,
        227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
+       
+  
+#### deleted bipartite networks
+
+## amazon_rating
+## bibsonomy
+## bookcrossing
+## citeulike
+## coorporate_directors
+## digg_votes
+## discogs_affiliation
+## discogs_genre
+## discogs_label
+## eu_procurements
+## flickr_group
+## github
+## jester
+## movielens_100k
+## nematode_mammal
+## paris_transportation
+## plant_pol_kato
+## plant_pol_robertson
+## reuters
+## sa_companies 202
+## stackoverflow
+## unicodelang
+## visualizeus
+## wiki_article_words
+## wiki_categories

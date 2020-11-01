@@ -4,13 +4,9 @@
 "arxiv_grqc","Social,Offline",FALSE,28980
 "arxiv_hepph","Social,Offline",FALSE,237010
 "arxiv_hepth","Social,Offline",FALSE,51971
-"diseasome","Biological",FALSE,1550
 "diseasome_shared","Biological",FALSE,2376
-"hiv_transmission","Biological",TRUE,85890
-"huron_prevalence","Biological",FALSE,316
-"lakewoods_prevalence","Biological",FALSE,384
+"hiv_transmission","Social,Offline",TRUE,85890
 "network_coauthors","Social,Offline",FALSE,2742
-"plants_ants","Biological",FALSE,285
 "ppi_cerevisiae","Biological",FALSE,23202
 "ppi_coli","Biological",FALSE,3655
 "ppi_elegans","Biological",FALSE,12234

@@ -16,8 +16,8 @@ rm(list.of.packages)
 # read in data and covert to edgelist
 A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87, 90, 105, 106, 107, 109, 113,
        120, 123, 132, 133, 137, 140, 141, 142, 144, 145, 148, 150, 151, 154, 155, 156, 159, 160, 163, 165, 167,
-       171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222, 223, 226,
-       227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
+       171, 173, 175, 177, 183, 186, 191, 195, 198, 199, 200, 201, 202, 204, 206, 208:215, 218, 219, 221, 222,
+       223, 226, 227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
 
 netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
 netzschleuder_complete <- fromJSON("data/netzschleuder_data/netzschleuder_complete.json")
@@ -125,7 +125,7 @@ netzschleuder_names <- netzschleuder_names[-A]
 netzschleuder_names_sub <- sub("_", " ", netzschleuder_names)
 
 netzschleuder_data <- fread("input/import_datasets/netzschleuder_data.csv")
-netzschleuder_data <- netzschleuder_data[-206]
+netzschleuder_data <- netzschleuder_data[-203]
 netzschleuder_data <- netzschleuder_data[-A]
 
 netzschleuder_complete <- fromJSON("data/netzschleuder_data/netzschleuder_complete.json")
@@ -231,4 +231,40 @@ netzschleuder_essentials <- netzschleuder_essentials[-c(235, 238, 241, 244, 283,
 write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
             row.names = F, sep = ",")
 
+
+# caida_as
+
+
+#### deleting remaining bipartite networks
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
+netzschleuder_essentials <- netzschleuder_essentials[-c(98, 103, 257, 267, 270, 271, 272, 273, 286,
+                                                        299, 369, 392, 516, 518, 523, 527, 528, 539,
+                                                        548, 589, 592, 601, 602)]
+
+# bibsonomy 98
+# bookcrossing 103
+# citeulike 257
+# corporate_directors 267
+# digg_votes 270
+# discogs_affiliation 271
+# discogs_genre 272
+# discogs_label 273
+# eu_procurements 286
+# flickr_groups 299
+# github 369
+# jester 392
+# movielens_100k 516
+# nematode_mammal 518
+# paris_transportation 523
+# plant_pol_kato 527
+# plant_pol_robertson 528
+# reuters 539
+# stackoverflow 548
+# unicodelang 589
+# visualizeus 592
+# wiki_article_words 601
+# wiki_categories 602
+
+write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
+            row.names = F, sep = ",")
 

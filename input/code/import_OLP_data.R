@@ -74,7 +74,6 @@ rm(list=ls())
 OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
 OLP_essentials[, "graphProperties"] <- gsub(",", "", OLP_essentials$graphProperties)
 
-length(OLP_essentials[, graphProperties])
 for(i in 1:length(OLP_essentials[, graphProperties])){
   if(length(grep("Directed", OLP_essentials[i, graphProperties],  OLP_essentials$graphProperties)) == 1){
     OLP_essentials[i, "graphProperties"] <- sub(".*", "TRUE", OLP_essentials[i, graphProperties])
@@ -139,13 +138,34 @@ OLP_essentials[c(329:343, 345:440), "networkDomain"] <- gsub("Social", "Social,O
 
 write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
 
+##### deleting norwegian board of directors bipartie networks
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+OLP_essentials <- OLP_essentials[-c(217:328)]
 
 
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
 
 
+#### deleting bipartite networks
+OLP_complete <- fread("input/import_datasets/OLP_complete.csv")[, c("title", "graphProperties")]
+OLP_complete$title <- tolower(OLP_complete$title)
+OLP_complete <- OLP_complete[order(OLP_complete$title)]
 
+OLP_complete <- OLP_complete[-c(57, 74:99, 202, 209:215, 252, 528:531)]
+OLP_complete <- OLP_complete[-c(217:328)]
 
+for(i in 1:length(OLP_complete[, graphProperties])){
+  if(length(grep("Bipartite", OLP_complete[i, graphProperties],  OLP_complete$graphProperties)) == 1){
+    OLP_complete[i, "graphProperties"] <- sub(".*", "TRUE", OLP_complete[i, graphProperties])
+  } else {
+    OLP_complete[i, "graphProperties"] <- sub(".*", "FALSE", OLP_complete[i, graphProperties])
+  }
+}
 
+type_list <- c(which(OLP_complete[, graphProperties] == TRUE))
 
+OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
+OLP_essentials <- OLP_essentials[-type_list]
 
+write.table(OLP_essentials, file = "input/import_datasets/OLP_essentials.csv", row.names = F, sep = ",")
 

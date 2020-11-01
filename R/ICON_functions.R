@@ -10,8 +10,8 @@
 #' @return igraph object
 #' @export
 #' @import igraph
-create.igraph.object.ICON <- function(network){
-  if(ICON_data[i, directed == TRUE]){
+create.igraph.object.ICON <- function(network, i, ICON_data = fread("input/import_datasets/ICON_data.csv")){
+  if(ICON_data[i, directed] == TRUE){
     graph_from_data_frame(network[, 1:2], directed = TRUE)
   } else {
     graph_from_data_frame(network[, 1:2], directed = FALSE)
@@ -26,51 +26,57 @@ create.igraph.object.ICON <- function(network){
 #' Average Path Lenght, Hierarchy, Density
 #' @export
 #' @import data.table
-compute.ICON.measures <- function(igraph.network, i){
+compute.ICON.measures <- function(igraph.network, i, ICON_data = fread("input/import_datasets/ICON_data.csv"),
+                                  directed = ICON_data[i, directed]){
   ID <- i
-  network.name <- as.character(ICON_data[i, network_name])
+  network_name <- as.character(ICON_data[i, network_name])
   domain <- as.character(ICON_data[i, networkDomain])
-  recipr <- reciprocity(igraph.network)
-  if(is.null(recipr)){
-    reciprocity <- NA
+  mean_degree <- mean(degree(igraph.network))
+  if(mean_degree == 0){
+    mean_degree <- NA
   }
-  degree_distr <- var(degree_distribution(igraph.network))
-  if(is.null(degree_distr)){
-    degree_distribution <- NA
-  }
-  trnstvty <- transitivity(igraph.network)
-  if(is.null(trnstvty)){
-    transitivity <- NA
-  }
-  degree_assortativity <- assortativity.degree(igraph.network)
-  if(is.null(degree_assortativity)){
-    degree_assortativity <- NA
-  }
-  btwnness <- var(betweenness(igraph.network))
-  if(is.null(btwnness)){
-    betweenness <- NA
-  }
-  clsness <- var(closeness(igraph.network))
-  if(is.null(clsness)){
-    closeness <- NA
-  }
-  avg_path_length <- mean_distance(igraph.network)
-  if(is.null(avg_path_length)){
+  avg_path_length <- average.path.length(igraph.network)
+  if(avg_path_length == 0){
     avg_path_length <- NA
   }
-  hrchy <- hierarchy(igraph.network)
-  if(is.null(hrchy)){
-    hrchy <- NA
+  trnstvty_average <- transitivity(igraph.network, type = "average")
+  if(trnstvty_average == 0){
+    trnstvty_average <- NA
+  }
+  btwnness <- var(edge_betweenness(igraph.network, directed = directed))
+  if(btwnness == 0){
+    btwnness <- NA
+  }
+  clsness <- var(closeness(igraph.network, normalized = T))
+  if(clsness == 0){
+    clsness <- NA
+  }
+  degree_assortativity <- assortativity.degree(igraph.network)
+  if(degree_assortativity == 0){
+    degree_assortativity <- NA
+  }
+  degree_distr <- var(degree_distribution(igraph.network))
+  if(degree_distr == 0){
+    degree_distr <- NA
   }
   edge_dens <- edge_density(igraph.network)
-  if(is.null(edge_dens)){
+  if(edge_dens == 0){
     edge_dens <- NA
   }
-  measures <- data.frame(ID = ID, Name = network.name, networkDomain = domain, Reciprocity = recipr, DegreeDistribution = degree_distr,
-                         Transitivity = trnstvty, DegreeAssortativity = degree_assortativity,
-                         Betweenness = btwnness, Closeness = clsness,
-                         AveragePathLength = avg_path_length, Hierarchy = hrchy,
-                         Density = edge_dens)
+  eigenv <- var(eigen_centrality(igraph.network, directed = directed)$vector)
+  if(eigenv == 0){
+    eigenv <- NA
+  }
+  trnstvty_global <- transitivity(igraph.network, type = "global")
+  if(trnstvty_global == 0){
+    trnstvty_global <- NA
+  }
+  recipr <- reciprocity(igraph.network)
+  measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain, AverageDegree = mean_degree,
+                         AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average, 
+                         Betweenness = btwnness, Closeness = clsness, DegreeAssortativity = degree_assortativity,
+                         DegreeDistribution = degree_distr, Density = edge_dens, EigenvectorCentrality = eigenv,
+                         GlobalTransitivity = trnstvty_global, Reciprocity = recipr)
   return(measures)
 }
 
@@ -99,15 +105,9 @@ append.ICON.measures <- function(measures, i, path = "output/ICON_measures.csv")
 #' @export
 #' @import data.table
 ICON.network.measures <- function(network, i, path = "output/ICON_measures.csv"){
-  if(ICON_data[i, directed == 1]){
-    igraph.network <- create.igraph.object.ICON(network)
+    igraph.network <- create.igraph.object.ICON(network, i)
     measures <- compute.ICON.measures(igraph.network, i)
     append.ICON.measures(measures, i, path)
-  } else {
-  igraph.network <- create.igraph.object.ICON(network)
-  measures <- compute.ICON.measures(igraph.network, i)
-  append.ICON.measures(measures, i, path)
-  }
 }
 
 
