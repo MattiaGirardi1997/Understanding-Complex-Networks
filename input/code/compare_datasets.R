@@ -17,7 +17,7 @@ rm(list.of.packages)
 netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
 ICON_data <- fread("input/import_datasets/ICON_data.csv")
 OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
-added_networks <- fread("input/import_datasets/added_networks.csv")
+added_networks_essentials <- fread("input/import_datasets/added_networks_essentials.csv")
 
 # extraxt part of name to apply grep
 extract_names <- function(dataset){
@@ -108,41 +108,15 @@ write.table(ICON_data, file = "input/import_datasets/ICON_data.csv", row.names =
 # deleted "seed_disperse_snow" from ICON dataset
 # deleted "smallwood_intensity" from ICON dataset
 
-table(master$networkDomain)
-
-
-netzschleuder_essentials <- netzschleuder_essentials[order(netzschleuder_essentials$number_edges)]
-netzschleuder_essentials <- netzschleuder_essentials[-c(556:612)]
-
-
-master <- rbind(netzschleuder_essentials, ICON_data, OLP_essentials, added_networks)
+master <- rbind(netzschleuder_essentials, ICON_data, OLP_essentials, added_networks_essentials)
 table(master$networkDomain)
 table(master$directed)
 
 length(master[directed == TRUE & networkDomain == "Biological", network_name])
-length(master[directed == FALSE & networkDomain == "Biological", network_name])
-length(master[directed == TRUE & networkDomain == "Social,Offline", network_name])
-length(master[directed == FALSE & networkDomain == "Social,Offline", network_name])
-length(master[directed == TRUE & networkDomain == "Social,Online", network_name])
-length(master[directed == FALSE & networkDomain == "Social,Online", network_name])
-length(master[directed == TRUE & networkDomain == "Informational", network_name])
-length(master[directed == FALSE & networkDomain == "Informational", network_name])
-length(master[directed == TRUE & networkDomain == "Transportation", network_name])
-length(master[directed == FALSE & networkDomain == "Tansportation", network_name])
 length(master[directed == TRUE & networkDomain == "Economic", network_name])
-length(master[directed == FALSE & networkDomain == "Economic", network_name])
-
-
-g <- fread("input/edges.csv")
-h <- graph_from_data_frame(g, directed = T)
-
-plot(h)
-compute.OLP.measures(h, 10)
-reciprocity(h)
-
-OLP_complete <- fread("input/import_datasets/OLP_complete.csv")[, c(1:14)]
-
-
-
-master <- master[order(master$network_name)]
+length(master[directed == TRUE & networkDomain == "Informational", network_name])
+length(master[directed == TRUE & networkDomain == "Social,Offline", network_name])
+length(master[directed == TRUE & networkDomain == "Social,Online", network_name])
+length(master[directed == TRUE & networkDomain == "Technological", network_name])
+length(master[directed == TRUE & networkDomain == "Transportation", network_name])
 

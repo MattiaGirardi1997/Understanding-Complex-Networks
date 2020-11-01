@@ -4,10 +4,14 @@
 \alias{create.igraph.object.ICON}
 \title{Convert .rda object to igraph object}
 \usage{
-create.igraph.object.ICON(network)
+create.igraph.object.ICON(
+  network,
+  i,
+  ICON_data = fread("input/import_datasets/ICON_data.csv")
+)
 }
 \arguments{
-\item{network}{Network name as an .rda object (corresponds to var_name in ICON_data)}
+\item{network}{Network name as .csv object (corresponds to var_name in ICON_data)}
 }
 \value{
 igraph object

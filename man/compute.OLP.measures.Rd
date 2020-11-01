@@ -4,7 +4,12 @@
 \alias{compute.OLP.measures}
 \title{Compute several network measures of a complex network.}
 \usage{
-compute.OLP.measures(igraph.network, i)
+compute.OLP.measures(
+  igraph.network,
+  i,
+  OLP_data = fread("input/import_datasets/OLP_essentials.csv"),
+  directed = OLP_data[i, directed]
+)
 }
 \arguments{
 \item{igraph.network}{Network as an igraph object.}

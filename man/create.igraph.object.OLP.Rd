@@ -4,7 +4,11 @@
 \alias{create.igraph.object.OLP}
 \title{Convert .csv object to igraph object}
 \usage{
-create.igraph.object.OLP(network)
+create.igraph.object.OLP(
+  network,
+  i,
+  OLP_data = fread("input/import_datasets/OLP_essentials.csv")
+)
 }
 \arguments{
 \item{network}{Network name as a .csv object (corresponds to network_name)}

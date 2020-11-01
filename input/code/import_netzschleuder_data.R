@@ -268,3 +268,31 @@ netzschleuder_essentials <- netzschleuder_essentials[-c(98, 103, 257, 267, 270, 
 write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
             row.names = F, sep = ",")
 
+
+#### deleting networks to balance out domains
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
+netzschleuder_essentials <- netzschleuder_essentials[order(netzschleuder_essentials$number_edges, decreasing = T)]
+netzschleuder_essentials <- netzschleuder_essentials[-c(1:42)]
+netzschleuder_essentials <- netzschleuder_essentials[order(netzschleuder_essentials$network_name)]
+
+netzschleuder_essentials <- netzschleuder_essentials[-c(282:307)]
+
+write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
+            row.names = F, sep = ",")
+
+# deleting kegg_metabolic networks
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
+netzschleuder_essentials <- netzschleuder_essentials[-c(321:429)]
+
+write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
+            row.names = F, sep = ",")
+
+# deleting caida_as networks
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
+netzschleuder_essentials <- netzschleuder_essentials[-c(102:223)]
+
+write.table(netzschleuder_essentials, file = "input/import_datasets/netzschleuder_essentials.csv",
+            row.names = F, sep = ",")
+
+
+

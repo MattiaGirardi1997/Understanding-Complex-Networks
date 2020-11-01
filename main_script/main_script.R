@@ -87,12 +87,15 @@ for(i in 1:length(added_networks_files)){
   added_network <- fread(added_networks_files[i])
   igraph.network <- create.igraph.object.ICON(added_network, i, ICON_data = fread("input/import_datasets/added_networks.csv"))
   measures <- compute.ICON.measures(igraph.network, i, ICON_data = fread("input/import_datasets/added_networks.csv"))
-  append.ICON.measures(measures, i, path = "output/added_networks_measurs.csv")
+  append.ICON.measures(measures, i, path = "output/added_networks_measures.csv")
   rm(added_network, igraph.network, measures)
 }
 
 rm(list = c("append.ICON.measures", "compute.ICON.measures",
             "create.igraph.object.ICON", "ICON.network.measures"))
+
+
+
 
 
 

@@ -4,7 +4,12 @@
 \alias{compute.ICON.measures}
 \title{Compute several network measures of a complex network.}
 \usage{
-compute.ICON.measures(igraph.network, i)
+compute.ICON.measures(
+  igraph.network,
+  i,
+  ICON_data = fread("input/import_datasets/ICON_data.csv"),
+  directed = ICON_data[i, directed]
+)
 }
 \arguments{
 \item{igraph.network}{Network as an igraph object.}
