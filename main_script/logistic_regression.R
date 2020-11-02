@@ -26,7 +26,7 @@ for(i in 1:length(master_measures$ID)){
   }
 }
 
-master_measures$NetworkDomain <- as.logical(master_measures$NetworkDomain)
+master_measures$NetworkDomain <- as.factor(master_measures$NetworkDomain)
 
 #### logistic regression model
 network_glm <- glm(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
@@ -44,5 +44,11 @@ glm.pred <- ifelse(glm.probs > 0.5, "TRUE", "FALSE")
 
 attach(master_measures)
 table(glm.pred, NetworkDomain)
+
+install.packages("Boruta")
+library(Boruta)
+
+
+
 
 
