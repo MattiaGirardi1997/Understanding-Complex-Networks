@@ -22,6 +22,12 @@ added_networks_measures <- fread("output/added_networks_measures.csv")
 #### create master table
 master_measures <- rbind(ICON_measures, netzschleuder_measures, OLP_measures, added_networks_measures)
 
+master_measures <- master_measures[order(master_measures$Name)]
+
+write.table(master_measures, file = "output/master_measures.csv", sep = ",", row.names = F)
+
+#### analyze distribution
+
 table(master_measures$NetworkDomain)
 
 
