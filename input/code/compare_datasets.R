@@ -8,7 +8,7 @@
 setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
 
 # install packages
-list.of.packages <- c("data.table")
+list.of.packages <- c("data.table", "dplyr")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
@@ -119,4 +119,43 @@ length(master[directed == TRUE & networkDomain == "Social,Offline", network_name
 length(master[directed == TRUE & networkDomain == "Social,Online", network_name])
 length(master[directed == TRUE & networkDomain == "Technological", network_name])
 length(master[directed == TRUE & networkDomain == "Transportation", network_name])
+
+
+#### add unique network name column
+netzschleuder_essentials2 <- fread("input/netzschleuder_essentials2.csv")
+netzschleuder_essentials2 <- netzschleuder_essentials2[order(netzschleuder_essentials2$number_edges, decreasing = T)]
+
+master <- rbind(netzschleuder_essentials, ICON_data, OLP_essentials, added_networks_essentials, netzschleuder_essentials2[1:57])
+
+
+unique_list <- data.frame()
+for(i in 1:length(master$network_name)){
+  network <- substr(master[i, network_name], start = 1, stop = 6)
+  domain <- master[i, networkDomain]
+  unique_list <- rbind(unique_list, data.frame(network, domain))
+}
+
+master_unique <- distinct(unique_list)
+  
+master_essentials <- data.frame(master$network_name, unique_list$network, master$networkDomain, master$directed,
+                           master$number_edges)
+
+names(master_essentials) <- c("network_name", "index", "networkDomain", "directed", "number_edges")
+
+master_essentials <- sort(master_essentials)
+
+write.table(master_essentials, file = "input/import_datasets/master_essentials.csv", sep = ",", row.names = F)
+
+master_essentials <- fread("input/import_datasets/master_essentials.csv")
+
+length(unique(master_essentials$index))
+
+g <- distinct(master_essentials[, 2:3])
+
+table(g$networkDomain)
+
+
+
+
+
 

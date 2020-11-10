@@ -24,7 +24,7 @@ ICON_data <- fread("input/import_datasets/ICON_data.csv")
 for(i in 1:length(ICON_data[, network_name])){
   ICON_file <- ICON_data[i, network_name]
   load(sprintf("data/ICON_data/%s.rda", ICON_file))
-  ICON.network.measures(eval(parse(text = sprintf("%s", ICON_file))), i, path = "output/ICON_measures.csv")
+  ICON.network.measures(eval(parse(text = sprintf("%s", ICON_file))), i, path = "output/undirected/ICON_measures_2.csv")
   objects_to_remove <- as.character(parse(text = sprintf("%s", ICON_file)))
   rm(list = c(objects_to_remove))
   rm(objects_to_remove)
@@ -45,7 +45,7 @@ OLP_essentials <- fread("input/import_datasets/OLP_essentials.csv")
 length(OLP_files)
 for(i in 1:length(OLP_files)){
   OLP_network <- fread(OLP_files[i])
-  OLP.network.measures(OLP_network, i)
+  OLP.network.measures(OLP_network, i, path = "output/undirected/OLP_measures_2.csv")
   rm(OLP_network)
 }
 
@@ -57,7 +57,7 @@ rm(list = c("append.OLP.measures", "compute.OLP.measures", "convert.OLP",
 source("R/netzschleuder_functions.R")
 
 # load in Netzschleuder data
-netzschleuder_files <- list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=TRUE)
+netzschleuder_files <- list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=T)
 netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
 
 # compute network measure for Netzschleuder networks 
@@ -71,6 +71,13 @@ for(i in 1:length(netzschleuder_files)){
   }
 }
 
+for(i in 187:length(netzschleuder_essentials$network_name)){
+  name <- as.character(netzschleuder_essentials[i, network_name])
+  netzschleuder_network <- fread(sprintf("data/netzschleuder_data/%s.csv", name))
+  NS.network.measures(netzschleuder_network, i, path = "output/undirected/netzschleuder_measures_2.csv")
+  rm(netzschleuder_network)
+}
+
 rm(list = c("append.NS.measures", "compute.NS.measures", "convert.NS",
             "create.igraph.object.NS", "NS.network.measures"))
 
@@ -79,15 +86,15 @@ rm(list = c("append.NS.measures", "compute.NS.measures", "convert.NS",
 source("R/ICON_functions.R")
 
 # load in ICON data
-added_networks <- fread("input/import_datasets/added_networks.csv")
+added_networks <- fread("input/import_datasets/added_networks_Essentials.csv")
 added_networks_files <- list.files(path = "data/added_networks", pattern="*.csv", full.names=TRUE)
 
 # compute network measure for added networks (with ICON functions)
-for(i in 1:length(added_networks_files)){
+for(i in 40:length(added_networks_files)){
   added_network <- fread(added_networks_files[i])
-  igraph.network <- create.igraph.object.ICON(added_network, i, ICON_data = fread("input/import_datasets/added_networks.csv"))
-  measures <- compute.ICON.measures(igraph.network, i, ICON_data = fread("input/import_datasets/added_networks.csv"))
-  append.ICON.measures(measures, i, path = "output/added_networks_measures.csv")
+  igraph.network <- create.igraph.object.ICON(added_network, i, ICON_data = fread("input/import_datasets/added_networks_essentials.csv"))
+  measures <- compute.ICON.measures(igraph.network, i, ICON_data = fread("input/import_datasets/added_networks_essentials.csv"))
+  append.ICON.measures(measures, i, path = "output/undirected/added_networks_measures.csv")
   rm(added_network, igraph.network, measures)
 }
 

@@ -37,7 +37,11 @@ convert.OLP <- function(OLP.network){
 #' @import igraph
 create.igraph.object.OLP <- function(network, i, OLP_data =
                                        fread("input/import_datasets/OLP_essentials.csv")){
-  graph_from_data_frame(network[, 1:2], directed = FALSE)
+  if(OLP_data[i, directed] == TRUE){
+    graph_from_data_frame(network[, 1:2], directed = TRUE)
+  } else {
+    graph_from_data_frame(network[, 1:2], directed = FALSE)
+  }
 }
 
 #' Compute several network measures of a complex network.
@@ -48,12 +52,12 @@ create.igraph.object.OLP <- function(network, i, OLP_data =
 #' Average Path Lenght, Hierarchy, Density
 #' @export
 #' @import data.table
-compute.OLP.measures <- function(igraph.network, i, OLP_data = fread("input/import_datasets/OLP_essentials.csv")){
+compute.OLP.measures <- function(igraph.network, i, OLP_data = fread("input/import_datasets/OLP_essentials.csv"),
+                                 directed = OLP_data[i, directed]){
   ID <- i
-  num_edges <- OLP_data[i, number_edges]
   network_name <- as.character(OLP_data[i, "network_name"])
   domain <- as.character(OLP_data[i, "networkDomain"])
-  mean_degree <- mean(degree(igraph.network, normalized = T))
+  mean_degree <- mean(degree(igraph.network))
   if(mean_degree == 0){
     mean_degree <- NA
   }
@@ -64,6 +68,10 @@ compute.OLP.measures <- function(igraph.network, i, OLP_data = fread("input/impo
   trnstvty_average <- transitivity(igraph.network, type = "average")
   if(trnstvty_average == 0){
     trnstvty_average <- NA
+  }
+  btwnness <- var(edge_betweenness(igraph.network, directed = directed))
+  if(btwnness == 0){
+    btwnness <- NA
   }
   clsness <- var(closeness(igraph.network, normalized = T))
   if(clsness == 0){
@@ -81,7 +89,7 @@ compute.OLP.measures <- function(igraph.network, i, OLP_data = fread("input/impo
   if(edge_dens == 0){
     edge_dens <- NA
   }
-  eigenv <- var(eigen_centrality(igraph.network)$vector)
+  eigenv <- var(eigen_centrality(igraph.network, directed = directed)$vector)
   if(eigenv == 0){
     eigenv <- NA
   }
@@ -89,11 +97,12 @@ compute.OLP.measures <- function(igraph.network, i, OLP_data = fread("input/impo
   if(trnstvty_global == 0){
     trnstvty_global <- NA
   }
-  measures <- data.frame(ID = ID, Name = network_name, number_edges = num_edges, NetworkDomain = domain, AverageDegree = mean_degree,
+  recipr <- reciprocity(igraph.network)
+  measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain, AverageDegree = mean_degree,
                          AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average, 
-                         Closeness = clsness, DegreeAssortativity = degree_assortativity,
+                         Betweenness = btwnness, Closeness = clsness, DegreeAssortativity = degree_assortativity,
                          DegreeDistribution = degree_distr, Density = edge_dens, EigenvectorCentrality = eigenv,
-                         GlobalTransitivity = trnstvty_global)
+                         GlobalTransitivity = trnstvty_global, Reciprocity = recipr)
   return(measures)
 }
 

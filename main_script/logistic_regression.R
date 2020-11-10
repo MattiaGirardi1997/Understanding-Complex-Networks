@@ -8,11 +8,10 @@
 setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
 
 # install packages
-list.of.packages <- c("data.table")
+list.of.packages <- c("data.table", "dplyr")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
-
 
 #### load in master
 master_measures <- fread("output/master_measures.csv")
@@ -30,37 +29,21 @@ master_measures$NetworkDomain <- as.factor(master_measures$NetworkDomain)
 
 #### logistic regression model
 network_glm <- glm(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
-                    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity +
-                    Reciprocity, family = binomial, data = master_measures)
+                    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity, family = binomial, data = master_measures)
 
 summary(network_glm)
 
-master_measures <- na.omit(master_measures)
 glm.probs <- predict(network_glm,type = "response")
 
 mean(glm.probs)
+# [1] 0.4634656
 
 glm.pred <- ifelse(glm.probs > 0.5, "TRUE", "FALSE")
 
-attach(master_measures)
-table(glm.pred, NetworkDomain)
-
-
-#### Boruta 
-install.packages("Boruta")
-library(Boruta)
-
 master_measures <- na.omit(master_measures)
-
-
-set.seed(100)
-boruta.bank_train <- Boruta(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
-                              DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity +
-                              Reciprocity, data = master_measures, doTrace = 3)
-print(boruta.bank_train)
-
-
-plot(boruta.bank_train, xlab = "", xaxt = "n")
+pred <- table(glm.pred, master_measures$NetworkDomain)
+(pred[1] + pred[4])/length(master_measures$NetworkDomain)
+# [1] 0.782881
 
 #### caret package
 # ensure results are repeatable
@@ -77,8 +60,8 @@ library(caret)
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 # train the model
 model <- train(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
-                 DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity +
-                 Reciprocity, data=master_measures, method="lvq", preProcess="scale", trControl=control)
+                 DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity
+               , data=master_measures, method="lvq", preProcess="scale", trControl=control)
 # estimate variable importance
 importance <- varImp(model, scale=FALSE)
 # summarize importance
@@ -87,14 +70,8 @@ print(importance)
 plot(importance)
 
 
-?trainControl()
-?train
-?varImp
-
-normalize
-
-
 #### train classifier
+library(class)
 #### load in master
 master_measures <- fread("output/master_measures.csv")
 
@@ -126,13 +103,14 @@ master_testLabels <- data.frame(master_testLabels)
 
 merge <- data.frame(master_testLabels, master_pred)
 
-names(merge) <- c("Observed Domain", "Predicted Domain")
-
-merge
+pred <- table(merge)
+(pred[1]+pred[4])/length(master_test$AverageDegree)
+# [1] 0.5816993
 
 ### use of caret package
 library(caret)
-master_measures <- fread("output/master_measures.csv")
+master_measures <- fread("output/master_measures.csv")[, -c("Reciprocity")]
+master_measures[master_measures == 0 | master_measures == 1,] <- NA
 
 for(i in 1:length(master_measures$ID)){
   if(master_measures[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
@@ -145,34 +123,74 @@ for(i in 1:length(master_measures$ID)){
 master_measures$NetworkDomain <- as.factor(master_measures$NetworkDomain)
 master_measures <- na.omit(master_measures)
 
-index <- createDataPartition(master_measures$NetworkDomain, p=0.75, list=FALSE)
+set.seed(1234)
+index <- createDataPartition(master_measures$NetworkDomain, times = 500, p=0.95, list=FALSE)
 
-master_training <- master_measures[index,]
-master_test <- master_measures[-index,]
+accuracy <- c()
+for(i in 1:500){
+  master_training <- master_measures[index[, i],]
+  master_test <- master_measures[-index[, i],]
+  default_glm_mod <- train(
+    form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
+      DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+    data = master_training,
+    trControl = trainControl(method = "cv", number = 5),
+    method = "glm",
+    family = "binomial"
+  )
+  prediction <- predict(default_glm_mod, newdata = master_test)
+  result <- table(master_test$NetworkDomain, prediction)
+  accuracy <- combine(accuracy, (result[1] + result[4])/(22))
+}
+mean(accuracy)
+## 100 iterations
+# > 50 warnings
+# [1] 0.7627273
 
-model_knn <- train(master_training[, 4:14], master_training$NetworkDomain, method='logreg')
+## 500 iterationa
+# > 50 warnings
+# [1] 0.7764545
 
+accuracy <- c()
+for(i in 1:500){
+master_training <- master_measures[index[, i],]
+master_test <- master_measures[-index[, i],]
 default_glm_mod <- train(
-  form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
-    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity +
-    Reciprocity,
-  data = master_training[,3:14],
+  form = NetworkDomain ~ AverageDegree + DegreeAssortativity + DegreeDistribution + Density + 
+    EigenvectorCentrality + GlobalTransitivity,
+  data = master_training,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
   family = "binomial"
 )
+prediction <- predict(default_glm_mod, newdata = master_test)
+result <- table(master_test$NetworkDomain, prediction)
+accuracy <- combine(accuracy, (result[1] + result[4])/22)
+}
+mean(accuracy)
+## 100 iterations
+# 7 errors
+# [1] 0.7472727
+
+## 500 iterations
+# > 50 errors
+# [1] 0.7610909
+
+
 
 summary(default_glm_mod)
 
 
-prediction <- predict(default_glm_mod, newdata = master_test[, 3:14])
 
-table(master_test$NetworkDomain, prediction)
-
-
-
-
-
-
+for(i in 1:100){
+  master_training <- master_measures[index[, i],]
+  master_test <- master_measures[-index[, i],]
+  default_glm_mod <- glm(data = master_training, NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
+                           DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+                         family = binomial)
+  prediction <- predict(default_glm_mod, newdata = master_test[,3:13])
+  result <- table(master_test$NetworkDomain, prediction)
+  accuracy <- combine(accuracy, (result[1] + result[4])/29)
+}
 
 

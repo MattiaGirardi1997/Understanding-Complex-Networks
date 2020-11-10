@@ -11,11 +11,7 @@
 #' @export
 #' @import igraph
 create.igraph.object.NS <- function(network, i, netzschleuder_data = fread("input/import_datasets/netzschleuder_essentials.csv")){
-  if(netzschleuder_data[i, directed] == TRUE){
-    graph_from_data_frame(network[, 1:2], directed = TRUE)
-  } else {
-    graph_from_data_frame(network[, 1:2], directed = FALSE)
-  }
+  graph_from_data_frame(network[, 1:2], directed = FALSE)
 }
 
 #' Compute several network measures of a complex network.
@@ -26,12 +22,12 @@ create.igraph.object.NS <- function(network, i, netzschleuder_data = fread("inpu
 #' Average Path Lenght, Hierarchy, Density
 #' @export
 #' @import data.table
-compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("input/import_datasets/netzschleuder_essentials.csv"),
-                                directed = netzschleuder_data[i, directed]){
+compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("input/import_datasets/netzschleuder_essentials.csv")){
   ID <- i
+  num_edges <- netzschleuder_data[i, number_edges]
   network_name <- as.character(netzschleuder_data[i, network_name])
   domain <- netzschleuder_data[i, networkDomain]
-  mean_degree <- mean(degree(igraph.network))
+  mean_degree <- mean(degree(igraph.network, normalized = T))
   if(mean_degree == 0){
     mean_degree <- NA
   }
@@ -43,16 +39,12 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
   if(trnstvty_average == 0){
     trnstvty_average <- NA
   }
-  btwnness <- var(edge_betweenness(igraph.network, directed = directed))
-  if(btwnness == 0){
-    btwnness <- NA
-  }
   clsness <- var(closeness(igraph.network, normalized = T))
   if(clsness == 0){
     clsness <- NA
   }
   degree_assortativity <- assortativity.degree(igraph.network)
-  if(degree_assortativity == 0){
+  if(is.null(degree_assortativity)){
     degree_assortativity <- NA
   }
   degree_distr <- var(degree_distribution(igraph.network))
@@ -63,7 +55,7 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
   if(edge_dens == 0){
     edge_dens <- NA
   }
-  eigenv <- var(eigen_centrality(igraph.network, directed = directed)$vector)
+  eigenv <- var(eigen_centrality(igraph.network)$vector)
   if(eigenv == 0){
     eigenv <- NA
   }
@@ -71,12 +63,11 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
   if(trnstvty_global == 0){
     trnstvty_global <- NA
   }
-  recipr <- reciprocity(igraph.network)
-  measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain, AverageDegree = mean_degree,
+  measures <- data.frame(ID = ID, Name = network_name, number_edges = num_edges, NetworkDomain = domain, AverageDegree = mean_degree,
                          AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average, 
-                         Betweenness = btwnness, Closeness = clsness, DegreeAssortativity = degree_assortativity,
+                         Closeness = clsness, DegreeAssortativity = degree_assortativity,
                          DegreeDistribution = degree_distr, Density = edge_dens, EigenvectorCentrality = eigenv,
-                         GlobalTransitivity = trnstvty_global, Reciprocity = recipr)
+                         GlobalTransitivity = trnstvty_global)
   return(measures)
 }
 
