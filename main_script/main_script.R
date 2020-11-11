@@ -64,14 +64,14 @@ netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essential
 for(i in 1:length(netzschleuder_files)){
   if(netzschleuder_essentials[i, number_edges] < 1000000){
   netzschleuder_network <- fread(netzschleuder_files[i])
-  NS.network.measures(netzschleuder_network, i, path = "output/NS_new2.csv")
+  NS.network.measures(netzschleuder_network, i, path = "output/netzschleuder_measures.csv")
   rm(netzschleuder_network)
   } else {
   i = i + 1 
   }
 }
 
-for(i in 187:length(netzschleuder_essentials$network_name)){
+for(i in 1:length(netzschleuder_essentials$network_name)){
   name <- as.character(netzschleuder_essentials[i, network_name])
   netzschleuder_network <- fread(sprintf("data/netzschleuder_data/%s.csv", name))
   NS.network.measures(netzschleuder_network, i, path = "output/undirected/netzschleuder_measures_2.csv")
@@ -90,7 +90,7 @@ added_networks <- fread("input/import_datasets/added_networks_Essentials.csv")
 added_networks_files <- list.files(path = "data/added_networks", pattern="*.csv", full.names=TRUE)
 
 # compute network measure for added networks (with ICON functions)
-for(i in 40:length(added_networks_files)){
+for(i in 1:length(added_networks_files)){
   added_network <- fread(added_networks_files[i])
   igraph.network <- create.igraph.object.ICON(added_network, i, ICON_data = fread("input/import_datasets/added_networks_essentials.csv"))
   measures <- compute.ICON.measures(igraph.network, i, ICON_data = fread("input/import_datasets/added_networks_essentials.csv"))
