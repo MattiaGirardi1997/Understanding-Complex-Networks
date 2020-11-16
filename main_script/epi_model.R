@@ -22,41 +22,74 @@ master_measures_2 <- fread("output/undirected/master_measures_2.csv")
 set.seed(1234)
 
 nw <- network(fread("data/netzschleuder_data/dnc.csv"))
-f <- graph_from_data_frame(fread("data/netzschleuder_data/dnc.csv"), directed = F)
-
 
 formation <- ~ edges
 
-target.stats <- c(200)
+target.stats <- c(12085)
 
-coef.diss <- dissolution_coefs(dissolution = ~ offset(edges), duration = 80)
+coef.diss <- dissolution_coefs(dissolution = ~ offset(edges), duration = 10)
 coef.diss
 
-est1 <- netest(nw, formation, target.stats, coef.diss)
+est1 <- netest(nw, coef.diss)
+?netest
 
-
-dx <- netdx(est1, nsims = 10, nsteps = 1000)
+dx <- netdx(est1, nsims = 2, nsteps = 1000)
 dx
 
-plot(dx)
+# load in Netzschleuder data
+netzschleuder_files <- list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=T)
+netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
 
-init <- init.net(i.num = 50)
+# network simulation parameters
+formation <- ~ edges
+target.stats <- c()
+coef.diss <- dissolution_coefs(dissolution = ~ offset(edges), duration = 80)
+# diffusion simulation parameters
+init <- init.net(i.num = 1)
 param <- param.net(inf.prob = 0.1, act.rate = 5, rec.rate = 0.02)
-control <- control.net(type = "SIS", nsteps = 100, nsims = 5)
+control <- control.net(type = "SIS", nsteps = 100, nsims = 1)
 
+for(i in 1:lengthnetzschleuder_files){
+  name <- as.character(netzschleuder_essentials[i, network_name])
+  nw <- fread(sprintf("data/netzschleuder_data/%s.csv", name))
+  target.stats <- c(netzschleuder_essentials[i, number_edges])
+  est1 <- netest(nw, formation, target.stats, coef.diss)
+  sim1 <- netsim(est1, param, init, control)
+  simulation <- data.frame(sim1)
+  infected <- simulation[100, "i.num"]
+}
+
+
+class(est1)
+# 7th_graders; 740 edges; 29 nodes
+init <- init.net(i.num = 25)
+param <- param.net(inf.prob = 0.01, act.rate = 5, rec.rate = 0.02)
+control <- control.net(type = "SIS", nsteps = 100, nsims = 1)
+
+i <- 1
+name <- as.character(netzschleuder_essentials[i, network_name])
+nw <- fread(sprintf("data/netzschleuder_data/%s.csv", name))
+target.stats <- c(netzschleuder_essentials[i, number_edges])
+est1 <- netest(nw, formation, target.stats, coef.diss)
 sim1 <- netsim(est1, param, init, control)
-sim1
+simulation <- data.frame(sim1)
+infected <- simulation[100, "i.num"]
+# 25 out of 29 infected
 
-g <- as.data.frame(sim1)
-g[100, "i.num"]
+g <- graph_from_data_frame(nw)
 
-
-gorder(nw)
-
-
-
-
-
+# cora; 91500 edges; 23166 nodes
+init <- init.net(i.num = 1)
+param <- param.net(inf.prob = 0.01, act.rate = 5, rec.rate = 0.2)
+control <- control.net(type = "SIS", nsteps = 100, nsims = 1)
+i <- 130
+name <- as.character(netzschleuder_essentials[i, network_name])
+nw <- fread(sprintf("data/netzschleuder_data/%s.csv", name))
+target.stats <- c(netzschleuder_essentials[i, number_edges])
+est1 <- netest(nw, formation, target.stats, coef.diss)
+sim1 <- netsim(est1, param, init, control)
+simulation <- data.frame(sim1)
+infected <- simulation[100, "i.num"]
 
 
 

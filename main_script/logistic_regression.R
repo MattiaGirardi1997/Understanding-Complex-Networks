@@ -97,7 +97,7 @@ master_test <- master_measures[ind == 2, 4:14]
 master_trainLabels <- master_measures[ind==1,3]
 master_testLabels <- master_measures[ind==2,3]
 
-master_pred <- knn(train = master_training, test = master_test, cl = master_trainLabels$NetworkDomain, k = 3)
+master_pred <- class::knn(train = master_training, test = master_test, cl = master_trainLabels$NetworkDomain, k = 3)
 
 master_testLabels <- data.frame(master_testLabels)
 
@@ -107,10 +107,12 @@ pred <- table(merge)
 (pred[1]+pred[4])/length(master_test$AverageDegree)
 # [1] 0.5816993
 
-### use of caret package
+################################################################
+#### use of caret package
 library(caret)
 master_measures <- fread("output/master_measures.csv")[, -c("Reciprocity")]
 master_measures[master_measures == 0 | master_measures == 1,] <- NA
+master_measures[1, 1] <- 1
 
 for(i in 1:length(master_measures$ID)){
   if(master_measures[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
@@ -123,6 +125,19 @@ for(i in 1:length(master_measures$ID)){
 master_measures$NetworkDomain <- as.factor(master_measures$NetworkDomain)
 master_measures <- na.omit(master_measures)
 
+## logistic regression
+default_glm_mod <- train(
+  form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Betweenness + Closeness +
+    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+  data = master_measures,
+  trControl = trainControl(method = "cv", number = 5),
+  method = "glm",
+  family = "binomial"
+)
+summary(default_glm_mod)
+
+## train classifier with 100 and 500 iterations
+# logistic regression; all variables; undirected and directed networks
 set.seed(1234)
 index <- createDataPartition(master_measures$NetworkDomain, times = 500, p=0.95, list=FALSE)
 
@@ -142,14 +157,23 @@ for(i in 1:500){
   result <- table(master_test$NetworkDomain, prediction)
   accuracy <- combine(accuracy, (result[1] + result[4])/(22))
 }
+sd(accuracy)
 mean(accuracy)
+
 ## 100 iterations
 # > 50 warnings
-# [1] 0.7627273
+# SD : [1] 0.08635397
+# mean : [1] 0.7668182
 
 ## 500 iterationa
 # > 50 warnings
-# [1] 0.7764545
+# SD : [1] 0.08473261
+# mean : [1] 0.7725455
+
+######################################################################
+# logistic regression; significant variables; undirected and directed networks
+set.seed(1234)
+index <- createDataPartition(master_measures$NetworkDomain, times = 500, p=0.95, list=FALSE)
 
 accuracy <- c()
 for(i in 1:500){
@@ -167,14 +191,18 @@ prediction <- predict(default_glm_mod, newdata = master_test)
 result <- table(master_test$NetworkDomain, prediction)
 accuracy <- combine(accuracy, (result[1] + result[4])/22)
 }
+sd(accuracy)
 mean(accuracy)
+
 ## 100 iterations
-# 7 errors
-# [1] 0.7472727
+# > 50 errors
+# SD : [1] 0.08658687
+# mean : [1] 0.7609091
 
 ## 500 iterations
 # > 50 errors
-# [1] 0.7610909
+# SD : [1] 0.08576655
+# mean : [1] 0.7587273
 
 
 

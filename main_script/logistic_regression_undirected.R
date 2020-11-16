@@ -108,10 +108,12 @@ pred <- table(merge)
 (pred[1]+pred[4])/length(master_test$AverageDegree)
 # [1] 0.7449664
 
+################################################################
 #### use of caret package
 library(caret)
 master_measures_2 <- fread("output/undirected/master_measures_2.csv")
 master_measures_2[master_measures_2 == 0 | master_measures_2 == 1,] <- NA
+master_measures_2[1, 1] <- 1
 
 for(i in 1:length(master_measures_2$ID)){
   if(master_measures_2[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
@@ -124,11 +126,24 @@ for(i in 1:length(master_measures_2$ID)){
 master_measures_2$NetworkDomain <- as.factor(master_measures_2$NetworkDomain)
 master_measures_2 <- na.omit(master_measures_2)
 
+## logistic regression
+default_glm_mod <- train(
+  form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
+    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+  data = master_measures_2,
+  trControl = trainControl(method = "cv", number = 5),
+  method = "glm",
+  family = "binomial"
+)
+summary(default_glm_mod)
+
+## train classifier with 100 and 500 iterations
+# logistic regression; all variables; only undirected networks
 set.seed(1234)
 index <- createDataPartition(master_measures_2$NetworkDomain, times = 500, p=0.95, list=FALSE)
 
 accuracy <- c()
-for(i in 1:100){
+for(i in 1:500){
   master_training <- master_measures_2[index[, i],]
   master_test <- master_measures_2[-index[, i],]
   default_glm_mod <- train(
@@ -143,21 +158,29 @@ for(i in 1:100){
   result <- table(master_test$NetworkDomain, prediction)
   accuracy <- combine(accuracy, (result[1] + result[4])/(27))
 }
+sd(accuracy)
 mean(accuracy)
+
 ## 100 iterations
 # > 50 warnings
-# [1] 0.7588889
+# SD : [1] 0.08127631
+# mean : [1] 0.7685185
 
-## 500 iterationa
+## 500 iterations
 # > 50 warnings
-# [1] 0.7676296
+# SD : [1] 0.07934681
+# mean : [1] 0.7635556
+
+# logistic regression; significant variables; only undirected networks
+set.seed(1234)
+index <- createDataPartition(master_measures_2$NetworkDomain, times = 500, p=0.95, list=FALSE)
 
 accuracy <- c()
 for(i in 1:500){
 master_training <- master_measures_2[index[, i],]
 master_test <- master_measures_2[-index[, i],]
 default_glm_mod <- train(
-  form = NetworkDomain ~ AverageDegree + AverageTransitivity + DegreeAssortativity + DegreeDistribution,
+  form = NetworkDomain ~ AveragePathLength + DegreeAssortativity + DegreeDistribution,
   data = master_training,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
@@ -167,14 +190,18 @@ prediction <- predict(default_glm_mod, newdata = master_test)
 result <- table(master_test$NetworkDomain, prediction)
 accuracy <- combine(accuracy, (result[1] + result[4])/27)
 }
+sd(accuracy)
 mean(accuracy)
+
 ## 100 iterations
-# > 50 errors
-# [1] 0.7737037
+# 4 errors
+# SD : [1] 0.09026249
+# mean : [1] 0.7777778
 
 ## 500 iterations
-# > 50 errors
-# [1] 0.7685926
+# 15 errors
+# SD : [1] 0.08289746
+# mean : [1] 0.7784568
 
 
 

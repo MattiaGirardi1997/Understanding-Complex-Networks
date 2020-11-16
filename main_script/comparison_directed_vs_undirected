@@ -1,27 +1,29 @@
 # undirected measures
-(Intercept)            2.808e+00  5.833e-01   4.814 1.48e-06 ***
-AverageDegree         -9.316e-03  3.471e-03  -2.684  0.00729 ** 
-AveragePathLength     -5.253e-01  1.209e-01  -4.346 1.39e-05 ***
-AverageTransitivity   -6.458e-01  1.052e+00  -0.614  0.53948    
-Closeness              2.532e+01  8.328e+01   0.304  0.76110    
-DegreeAssortativity    5.545e+00  8.274e-01   6.701 2.07e-11 ***
-DegreeDistribution    -1.180e+02  3.633e+01  -3.247  0.00116 ** 
-Density                6.992e-02  1.583e-01   0.442  0.65881    
-EigenvectorCentrality -1.309e+01  7.608e+00  -1.721  0.08523 .  
-GlobalTransitivity    -2.936e-01  1.579e+00  -0.186  0.85248  
+                        Estimate Std. Error z value Pr(>|z|)    
+(Intercept)            2.984e+00  5.961e-01   5.006 5.55e-07 ***
+AverageDegree         -5.024e-03  2.767e-03  -1.816  0.06939 .  
+AveragePathLength     -5.854e-01  1.236e-01  -4.738 2.16e-06 ***
+AverageTransitivity   -6.805e-01  1.048e+00  -0.649  0.51626    
+Closeness              2.708e-01  8.972e+01   0.003  0.99759    
+DegreeAssortativity    5.738e+00  8.244e-01   6.960 3.41e-12 ***
+DegreeDistribution    -1.225e+02  3.732e+01  -3.283  0.00103 ** 
+Density                9.734e-01  6.164e-01   1.579  0.11433    
+EigenvectorCentrality -1.362e+01  7.552e+00  -1.803  0.07138 .  
+GlobalTransitivity    -3.214e-01  1.565e+00  -0.205  0.83730  
 
 # directed & undirected measures
-(Intercept)            4.678e-01  4.322e-01   1.082 0.279123    
-AverageDegree         -7.898e-03  2.480e-03  -3.185 0.001446 ** 
-AveragePathLength     -8.291e-02  7.576e-02  -1.094 0.273767    
-AverageTransitivity   -3.028e-02  9.960e-01  -0.030 0.975743    
-Betweenness            2.473e-12  3.589e-12   0.689 0.490796    
-Closeness              7.475e+01  6.311e+01   1.184 0.236259    
-DegreeAssortativity    3.356e+00  7.632e-01   4.396 1.10e-05 ***
-DegreeDistribution    -1.503e+02  3.738e+01  -4.021 5.81e-05 ***
-Density                5.426e-02  7.328e-02   0.740 0.459026    
-EigenvectorCentrality -2.964e+01  6.973e+00  -4.251 2.13e-05 ***
-GlobalTransitivity     5.428e+00  1.514e+00   3.585 0.000337 ***
+                        Estimate Std. Error z value Pr(>|z|) 
+(Intercept)            1.149e+00  4.802e-01   2.394 0.016684 *  
+AverageDegree         -1.266e-02  3.738e-03  -3.386 0.000708 ***
+AveragePathLength     -1.380e-01  8.163e-02  -1.690 0.090934 .  
+AverageTransitivity   -1.145e+00  1.085e+00  -1.055 0.291525    
+Betweenness            1.997e-12  3.576e-12   0.559 0.576446    
+Closeness              6.599e+01  6.757e+01   0.977 0.328742    
+DegreeAssortativity    4.128e+00  8.634e-01   4.782 1.74e-06 ***
+DegreeDistribution    -1.733e+02  4.252e+01  -4.077 4.57e-05 ***
+Density                5.021e+00  1.596e+00   3.145 0.001662 ** 
+EigenvectorCentrality -2.345e+01  8.109e+00  -2.892 0.003833 ** 
+GlobalTransitivity     3.792e+00  1.624e+00   2.334 0.019581 * 
 
 AverageDegree             0.7796   DegreeDistribution        0.7393
 DegreeDistribution        0.7199   DegreeAssortativity       0.7186
