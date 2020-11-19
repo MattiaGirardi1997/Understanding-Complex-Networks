@@ -15,12 +15,13 @@ rm(list.of.packages)
 
 # set parameters
 p.infection <- 0.7 # probability of infection
-pct.starting.infected <- 0.02 # percentage of nodes that start infected
+pct.starting.infected <- 0.5 # percentage of nodes that start infected
 max.time <- 100 # number of iterations
 
 # load in master data
 master <- fread("output/master_measures.csv")[, Name]
 
+set.seed(1234)
 for(j in 2:2){
   # load in network
   file <- as.character(master[j])
@@ -80,28 +81,33 @@ for(j in 2:2){
     
     # if edge is discordant
     if (el[random.edge, "discordant"] == TRUE){
-      
-      node1 <- which(el[random.edge, "Node1"] == infected_data[, "Nodes"])
-      node2 <- which(el[random.edge, "Node2"] == infected_data[, "Nodes"])
-      
-      # select susceptible node
-      who.susceptible <- c(node1, node2)[!c(infections[[t]][node1], 
-                                            infections[[t]][node2])]
-      
-      # flip coin whether the node will be infected or not
-      set.seed(1234)
-      infections[[t]][who.susceptible] <- sample(
-        c(T, F), 
-        size = 1, 
-        prob = c(p.infection, 1 - p.infection)
-      )
+      if(which(el[random.edge, c("from.infected", "to.infected")] == TRUE) == 1) {
+        nodes <- as.vector(neighbors(g, which(el[random.edge, "Node1"] == infected_data[, "Nodes"])))
+        for(n in nodes){
+          infections[[t]][n] <- sample(
+            c(T, F), 
+            size = 1, 
+            prob = c(p.infection, 1 - p.infection)
+          )
+          }
+        rm(nodes)
+        } else if(which(el[random.edge, c("from.infected", "to.infected")] == TRUE) == 2) {
+        nodes <- as.vector(neighbors(g, which(el[random.edge, "Node2"] == infected_data[, "Nodes"])))
+        for(n in nodes){
+          infections[[t]][n] <- sample(
+            c(T, F), 
+            size = 1, 
+            prob = c(p.infection, 1 - p.infection)
+          )
+        }
+        rm(nodes)
+      }
     }
-  }
-  
+  } 
   # average number of infections
   res <- mean(sapply(infections, sum))
   
- # save result
+  # save result
   if(j == 1){
     write.table(data.frame(Name = file, Nodes = n.people, Infected = res), file = "output/diffusion/diffusion_results2.csv", sep = ",", row.names = F,
                 col.names = T)
@@ -113,11 +119,11 @@ for(j in 2:2){
 
 sapply(infections, sum)
 
-identical(infections[[1]], infections[[20]])
 
 
-setkey()
-subset
+
+
+as.vector(neighbors(g, which(el[random.edge, "Node1"] == infected_data[, "Nodes"])))
 
 
 

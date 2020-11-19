@@ -253,4 +253,4 @@ grid.arrange(a, b, c, d, nrow = 2, ncol = 2)
 
 
 
-
+*frequency
