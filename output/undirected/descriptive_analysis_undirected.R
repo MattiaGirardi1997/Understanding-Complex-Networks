@@ -8,7 +8,7 @@
 setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
 
 # install packages
-list.of.packages <- c("data.table", "corrplot", "ggplot2", "dplyr", "janitor")
+list.of.packages <- c("data.table", "corrplot", "ggplot2", "dplyr", "gridExtra")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
@@ -40,8 +40,12 @@ measures <- master_measures_2[-c(97:101, 102:103, 188:190, 229, 273, 392, 428, 4
 # packet_delays
 
 write.table(measures, file = "output/undirected/master_measures_2.csv", sep = ",", row.names = F)
+
+################################################################
+# load in complete measures
 measures <- fread("output/undirected/master_measures_2.csv")
 measures <- na.omit(measures)
+
 #### pie chart of domains
 prct <- prop.table(table(measures$NetworkDomain))
 colors <- c("Green", "Blue", "Red", "Purple", "Black", "Orange", "Yellow")
@@ -54,9 +58,9 @@ cor <- cor(measures[, c(3, 5:13)], use = "complete.obs")
 corrplot(cor)
 
 
+#
+measures <- fread("output/undirected/master_measures_2.csv")
 
-
-# 
 # Average Degree
 summary(measures$AverageDegree)
 ggplot(measures, aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
@@ -94,8 +98,9 @@ ggplot(measures, aes(x = DegreeDistribution, fill = NetworkDomain)) + geom_histo
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
 # Density
-# summary(measures$Density)
-# ggplot(measures, aes(x = Density, fill = NetworkDomain)) + geom_histogram(position = "identity", alpha = 0.5)
+summary(measures$Density)
+ggplot(measures, aes(x = Density, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
 # Eigenvector Centrality
 summary(measures$EigenvectorCentrality)
@@ -107,10 +112,6 @@ summary(measures$GlobalTransitivity)
 ggplot(measures, aes(x = GlobalTransitivity, fill = NetworkDomain)) + geom_histogram() +
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
-# Reciprocity
-# summary(measures$Reciprocity)
-# ggplot(measures, aes(x = Reciprocity, fill = NetworkDomain)) + geom_histogram(position = "identity", alpha = 0.5)
-
 
 ## comparing means
 mean_all <- aggregate(measures[, 5:13], list(measures$NetworkDomain), mean)
@@ -121,16 +122,125 @@ ggplot(data_long, aes(x = '', y = categories, fill = NetworkDomain)) +
   geom_bar(position = "fill", stat = "identity") + 
   facet_wrap(~ type_col, scales = "free_x")
 
-# degree assortativity
-ggplot(mean_all, aes(x = '', y = DegreeAssortativity, fill = NetworkDomain)) + geom_bar(position = "fill",
-                                                                                  stat = "identity")
+
+########################################################
+## bivariate plots
+measures_bi <- fread("output/undirected/master_measures_2.csv")
+measures_bi[measures_bi == 0 | measures_bi == 1,] <- NA
+measures_bi[1, 1] <- 1
+
+for(i in 1:length(measures_bi$ID)){
+  if(measures_bi[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
+    measures_bi[i, "NetworkDomain"] <- gsub(".*", "Social", measures_bi[i, "NetworkDomain"])
+  } else {
+    measures_bi[i, "NetworkDomain"] <- gsub(".*", "Non-Social", measures_bi[i, "NetworkDomain"])
+  }
+}
 
 
-data_long <- tidyr::gather(measures[AveragePathLength < 2], key = type_col, value = categories, -c("ID", "Name", "NetworkDomain",
-                                                                            "number_edges"))
-ggplot(data_long, aes(x = number_edges, y = categories)) +
-  geom_point() + 
-  facet_wrap(~ type_col, scales = "free_x")
+ggplot(measures_bi, aes(x = measures_bi[NetworkDomain == "Social", 
+                                  AveragePathLength],
+                     y = measures_bi[NetworkDomain == "Non-Social", 
+                                     AveragePathLength])) + geom_boxplot()
+
+
+ggplot(measures_bi, aes(x = NetworkDomain, y = AverageDegree)) + geom_boxplot()
+ggplot(measures_bi[AveragePathLength < 10], aes(x = NetworkDomain, y = AveragePathLength)) + geom_boxplot()
+ggplot(measures_bi, aes(x = NetworkDomain, y = AverageTransitivity)) + geom_boxplot()
+ggplot(measures_bi[Closeness < 0.005], aes(x = NetworkDomain, y = Closeness)) + geom_boxplot()
+ggplot(measures_bi, aes(x = NetworkDomain, y = DegreeAssortativity)) + geom_boxplot()
+ggplot(measures_bi[DegreeDistribution < 0.005], aes(x = NetworkDomain, y = DegreeDistribution)) + geom_boxplot()
+ggplot(measures_bi[Density < 0.08], aes(x = NetworkDomain, y = Density)) + geom_boxplot()
+ggplot(measures_bi[EigenvectorCentrality < 0.05], aes(x = NetworkDomain, y = EigenvectorCentrality)) + geom_boxplot()
+ggplot(measures_bi[GlobalTransitivity < 0.5], aes(x = NetworkDomain, y = GlobalTransitivity)) + geom_boxplot()
+
+
+# Average Degree
+summary(measures_bi$AverageDegree)
+ggplot(measures_bi, aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+a <- ggplot(measures_bi[AverageDegree < 20], aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[AverageDegree < 20], aes(x = NetworkDomain, y = AverageDegree)) + geom_boxplot()
+grid.arrange(a, b)
+
+
+# Average Path Length
+summary(measures_bi$AveragePathLength)
+a <- ggplot(measures_bi[AveragePathLength < 10], aes(x = AveragePathLength, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[AveragePathLength < 10], aes(x = NetworkDomain, y = AveragePathLength)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Average Transitivity
+summary(measures_bi$AverageTransitivity)
+a <- ggplot(measures_bi, aes(x = AverageTransitivity, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi, aes(x = NetworkDomain, y = AverageTransitivity)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Closeness
+summary(measures_bi$Closeness)
+a <- ggplot(measures_bi[Closeness < 0.005], aes(x = Closeness, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[Closeness < 0.005], aes(x = NetworkDomain, y = Closeness)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Degree Assortativity
+summary(measures_bi$DegreeAssortativity)
+a <- ggplot(measures_bi, aes(x = DegreeAssortativity, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi, aes(x = NetworkDomain, y = DegreeAssortativity)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Degree Distribution
+summary(measures_bi$DegreeDistribution)
+a <- ggplot(measures_bi[DegreeDistribution < 0.005], aes(x = DegreeDistribution, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[DegreeDistribution < 0.005], aes(x = NetworkDomain, y = DegreeDistribution)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Density
+summary(measures_bi$Density)
+a <- ggplot(measures_bi[Density < 0.08], aes(x = Density, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[Density < 0.08], aes(x = NetworkDomain, y = Density)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Eigenvector Centrality
+summary(measures_bi$EigenvectorCentrality)
+a <- ggplot(measures_bi[EigenvectorCentrality < 0.1], aes(x = EigenvectorCentrality, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi[EigenvectorCentrality < 0.1], aes(x = NetworkDomain, y = EigenvectorCentrality)) + geom_boxplot()
+grid.arrange(a, b)
+
+# Global Transitivity
+summary(measures_bi$GlobalTransitivity)
+a <- ggplot(measures_bi, aes(x = GlobalTransitivity, fill = NetworkDomain)) + geom_histogram() +
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+b <- ggplot(measures_bi, aes(x = NetworkDomain, y = GlobalTransitivity)) + geom_boxplot()
+grid.arrange(a, b)
+
+
+
+?geom_boxplot
+
+names(measures_bi)
+ggplot(measures_bi, aes(x = number_edges, y = AveragePathLength, fill = NetworkDomain)) + geom_boxplot() 
++ facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+  
+
+  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
+
+
+length(measures_bi[NetworkDomain == "Social", AveragePathLength])
+length(measures_bi[NetworkDomain == "Non-Social", ID][c(1:222)])
+
+
+
+
+
+
 
 attach(measures)
 par(mfrow=c(2,2))

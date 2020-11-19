@@ -129,7 +129,7 @@ master_measures_2 <- na.omit(master_measures_2)
 ## logistic regression
 default_glm_mod <- train(
   form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity + number_edges,
   data = master_measures_2,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
@@ -140,15 +140,15 @@ summary(default_glm_mod)
 ## train classifier with 100 and 500 iterations
 # logistic regression; all variables; only undirected networks
 set.seed(1234)
-index <- createDataPartition(master_measures_2$NetworkDomain, times = 500, p=0.95, list=FALSE)
+index <- createDataPartition(master_measures_2$NetworkDomain, times = 100, p=0.95, list=FALSE)
 
 accuracy <- c()
-for(i in 1:500){
+for(i in 1:100){
   master_training <- master_measures_2[index[, i],]
   master_test <- master_measures_2[-index[, i],]
   default_glm_mod <- train(
     form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-      DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+      DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity + number_edges,
     data = master_training,
     trControl = trainControl(method = "cv", number = 5),
     method = "glm",
@@ -180,7 +180,7 @@ for(i in 1:500){
 master_training <- master_measures_2[index[, i],]
 master_test <- master_measures_2[-index[, i],]
 default_glm_mod <- train(
-  form = NetworkDomain ~ AveragePathLength + DegreeAssortativity + DegreeDistribution,
+  form = NetworkDomain ~ AveragePathLength + DegreeAssortativity + DegreeDistribution + number_edges,
   data = master_training,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
@@ -194,14 +194,14 @@ sd(accuracy)
 mean(accuracy)
 
 ## 100 iterations
-# 4 errors
-# SD : [1] 0.09026249
-# mean : [1] 0.7777778
+# 2 errors
+# SD : [1] 0.07781429
+# mean : [1] 0.7888889
 
 ## 500 iterations
-# 15 errors
-# SD : [1] 0.08289746
-# mean : [1] 0.7784568
+# 14 errors
+# SD : [1] 0.0768635
+# mean : [1] 0.7843704
 
 
 
