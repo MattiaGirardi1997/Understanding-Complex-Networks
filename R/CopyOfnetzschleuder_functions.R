@@ -31,7 +31,7 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
   ID <- i
   network_name <- as.character(netzschleuder_data[i, network_name])
   domain <- netzschleuder_data[i, networkDomain]
-  mean_degree <- mean(degree(igraph.network, #normalized = T))
+  mean_degree <- mean(degree(igraph.network, normalized = T))
   if(mean_degree == 0){
     mean_degree <- NA
   }
@@ -73,7 +73,7 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
   }
   recipr <- reciprocity(igraph.network)
   measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain, AverageDegree = mean_degree,
-                         AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average, 
+                         AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average,
                          Betweenness = btwnness, Closeness = clsness, DegreeAssortativity = degree_assortativity,
                          DegreeDistribution = degree_distr, Density = edge_dens, EigenvectorCentrality = eigenv,
                          GlobalTransitivity = trnstvty_global, Reciprocity = recipr)
