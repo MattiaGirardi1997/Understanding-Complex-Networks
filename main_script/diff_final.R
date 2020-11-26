@@ -3,140 +3,101 @@
 ## Mattia Girardi
 ## 18.11.2020
 #########################################
-
-# set working directory
-setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
-
-# install packages
 list.of.packages <- c("data.table", "igraph", "statnet", "tidyverse", "magrittr", "dplyr")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
 
-# set parameters
-p.infection <- 0.7 # probability of infection
+### parameters
+p.infection <- 1 # probability of infection
 pct.starting.infected <- 0.5 # percentage of nodes that start infected
-max.time <- 100 # number of iterations
+runs <- 10000 # number of iterations
 
 # load in master data
-master <- fread("output/master_measures.csv")[, Name]
+master_data <- fread("output/undirected/master_measures_2.csv")[, c("Name", "NetworkDomain", "number_edges")]
 
-set.seed(1234)
-for(j in 2:2){
-  # load in network
-  file <- as.character(master[j])
-  nw <- fread(sprintf("data/all_data/%s.csv", file))
-  g <- graph_from_data_frame(nw, directed = F)
-  
-  # create list to store different iterations
-  infections <- vector(length = max.time, mode = "list")
-  
-  # get number of nodes
-  n.people <- gorder(g)
-  
-  # create infected list
-  set.seed(1234)
-  infected <- sample(
-    x = c(T, F),      
-    size = n.people,  
-    replace = T,      
-    prob = c(pct.starting.infected, 1 - pct.starting.infected)
-  )
-  
-  for(t in 1:max.time){
-    # update infected list
-    if(t == 1){
-      infections[[t]] <- infected
-    } else {
-      infections[[t]] <- infections[[t-1]]
-    }
-    
-    # ordering nodes
-    V_order <- sort(as.integer(V(g)$name))
-    
-    # create data frame of infection indices for each node
-    infected_data <- data.frame(Nodes = V_order, infected = infections[[t]])
-    
-    # add infection index to each edge pair
-    from.list <- c()
-    to.list <- c()
-    for(i in 1:length(nw$Node1)){
-      node1 <- which(nw[i, Node1] == infected_data$Nodes)
-      from.inf <- infected_data[node1, "infected"]
-      from.list <- combine(from.list, from.inf)
-      node2 <- which(nw[i, Node2] == infected_data$Nodes)
-      to.inf <- infected_data[node2, "infected"]
-      to.list <- combine(to.list, to.inf)
-    }
-    
-    # create edgelist that shows discordant nodes
-    el <- mutate(nw, from.infected = from.list, to.infected = to.list, 
-                 discordant = (from.infected != to.infected))
-    
-    # remove some variables
-    rm(node1, from.inf, from.list, node2, to.inf, to.list, V_order)
-    
-    # select random edge
-    random.edge <- sample(nrow(el), size = 1)
-    
-    # if edge is discordant
-    if (el[random.edge, "discordant"] == TRUE){
-      if(which(el[random.edge, c("from.infected", "to.infected")] == TRUE) == 1) {
-        nodes <- as.vector(neighbors(g, which(el[random.edge, "Node1"] == infected_data[, "Nodes"])))
-        for(n in nodes){
-          infections[[t]][n] <- sample(
-            c(T, F), 
-            size = 1, 
-            prob = c(p.infection, 1 - p.infection)
-          )
-          }
-        rm(nodes)
-        } else if(which(el[random.edge, c("from.infected", "to.infected")] == TRUE) == 2) {
-        nodes <- as.vector(neighbors(g, which(el[random.edge, "Node2"] == infected_data[, "Nodes"])))
-        for(n in nodes){
-          infections[[t]][n] <- sample(
-            c(T, F), 
-            size = 1, 
-            prob = c(p.infection, 1 - p.infection)
-          )
-        }
-        rm(nodes)
-      }
-    }
-  } 
-  # average number of infections
-  res <- mean(sapply(infections, sum))
-  
-  # save result
-  if(j == 1){
-    write.table(data.frame(Name = file, Nodes = n.people, Infected = res), file = "output/diffusion/diffusion_results2.csv", sep = ",", row.names = F,
-                col.names = T)
-  } else {
-    write.table(data.frame(file, n.people, res), file = "output/diffusion/diffusion_results2.csv", sep = ",", row.names = F,
-                append = T, col.names = F)
-  }
+n <- 1
+j <- 1
+# load in network
+file <- as.character(master_data[j, Name])
+domain <- as.character(master_data[j, NetworkDomain])
+edges <- master_data[j, number_edges]
+el <- fread(sprintf("data/all_data/%s.csv", file))
+g <- graph_from_data_frame(el, directed = F)
+
+# get number of nodes
+n.people <- gorder(g)
+
+# create initial infection information
+infected <- sample(
+  x = c(T, F),
+  size = n.people,
+  replace = T,
+  prob = c(pct.starting.infected, 1 - pct.starting.infected)
+)
+
+# ensure at least one node is infected
+if(length(which(infected)) == 0){
+  infect <- sample(length(infected), size = 1)
+  infected[infect] <- TRUE
 }
 
-sapply(infections, sum)
+# ordering nodes
+V_order <- sort(as.integer(V(g)$name))
 
+# create data frame of infection indices for each node
+infected_data <- data.table(Nodes = V_order, infected = infected)
+print(length(which(infected_data$infected))/length(infected_data$infected))
+# remove some variables
+rm(V_order)
 
+ten.thousands <- 0
+t <- 1
+while(t < (runs+2)){
 
+  # select random edge
+  random.edge <- sample(nrow(el), size = 1)
+  el[random.edge]
+  c(infected_data[which(el[random.edge, Node1] == infected_data$Nodes), ],
+    infected_data[which(el[random.edge, Node2] == infected_data$Nodes), ])
 
+  # determine whether one of the edge's nodes are susceptible
+  if (infected_data[which(el[random.edge, Node1] == infected_data$Nodes), infected] !=
+      infected_data[which(el[random.edge, Node2] == infected_data$Nodes), infected]){
 
-as.vector(neighbors(g, which(el[random.edge, "Node1"] == infected_data[, "Nodes"])))
+    # detect susceptible node
+    who.susceptible <-  c(el[random.edge, Node1],el[random.edge, Node2])[!c(infected_data[el[random.edge, Node1] == infected_data$Nodes, infected],
+                                                                            infected_data[el[random.edge, Node2] == infected_data$Nodes, infected])]
 
+    # detect susceptible node
+    infected_data[who.susceptible == Nodes, infected := sample(
+      c(T, F),
+      size = 1,
+      prob = c(p.infection, 1 - p.infection)
+    )]
+  }
+  infected_data[who.susceptible == Nodes]
+  print(length(which(infected_data$infected))/length(infected_data$infected))
 
-
-
-
-
-
-
-
-
-
-
-
+  # save required number of iterations needed to achieve 70% of nodes infected
+  if(length(which(infected_data$infected))/length(infected_data$infected) >= 0.7){
+    if(j == 1){
+      write.table(data.table(Name = file, Domain = domain, Nodes = n.people, Edges = edges,
+                             Iterations_1 = (t + (ten.thousands*runs))),
+                  file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+                  col.names = T)
+    } else {
+      write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
+                  file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+                  append = T, col.names = F)
+    }
+    break
+  } else if(t == runs + 1){
+    ten.thousands <- ten.thousands + 1
+    t <- 1
+  }
+  t <- t + 1
+}
 
 
 

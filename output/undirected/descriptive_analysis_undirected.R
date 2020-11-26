@@ -65,7 +65,8 @@ measures <- fread("output/undirected/master_measures_2.csv")
 summary(measures$AverageDegree)
 ggplot(measures, aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
-ggplot(measures[AverageDegree < 20], aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
+ggplot(measures[AverageDegree < 80], aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram()
++
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
 # Average Path Length
@@ -86,7 +87,7 @@ ggplot(measures, aes(x = Closeness, fill = NetworkDomain)) + geom_histogram() +
 # Betweenness
 #summary(measures$Betweenness)
 # ggplot(measures, aes(x = Betweenness, fill = NetworkDomain)) + geom_histogram()
-                                                                                     
+
 # Degree Assortativity
 summary(measures$DegreeAssortativity)
 ggplot(measures, aes(x = DegreeAssortativity, fill = NetworkDomain)) + geom_histogram() +
@@ -94,7 +95,8 @@ ggplot(measures, aes(x = DegreeAssortativity, fill = NetworkDomain)) + geom_hist
 
 # Degree Distribution
 summary(measures$DegreeDistribution)
-ggplot(measures, aes(x = DegreeDistribution, fill = NetworkDomain)) + geom_histogram() +
+ggplot(measures[DegreeDistribution < 0.03], aes(x = DegreeDistribution, fill = NetworkDomain)) + geom_histogram()
++
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
 # Density
@@ -119,7 +121,7 @@ setnames(mean_all, "Group.1", "NetworkDomain")
 
 data_long <- tidyr::gather(mean_all, key = type_col, value = categories, -c("NetworkDomain", "DegreeAssortativity"))
 ggplot(data_long, aes(x = '', y = categories, fill = NetworkDomain)) +
-  geom_bar(position = "fill", stat = "identity") + 
+  geom_bar(position = "fill", stat = "identity") +
   facet_wrap(~ type_col, scales = "free_x")
 
 
@@ -138,9 +140,9 @@ for(i in 1:length(measures_bi$ID)){
 }
 
 
-ggplot(measures_bi, aes(x = measures_bi[NetworkDomain == "Social", 
+ggplot(measures_bi, aes(x = measures_bi[NetworkDomain == "Social",
                                   AveragePathLength],
-                     y = measures_bi[NetworkDomain == "Non-Social", 
+                     y = measures_bi[NetworkDomain == "Non-Social",
                                      AveragePathLength])) + geom_boxplot()
 
 
@@ -226,9 +228,9 @@ grid.arrange(a, b)
 ?geom_boxplot
 
 names(measures_bi)
-ggplot(measures_bi, aes(x = number_edges, y = AveragePathLength, fill = NetworkDomain)) + geom_boxplot() 
+ggplot(measures_bi, aes(x = number_edges, y = AveragePathLength, fill = NetworkDomain)) + geom_boxplot()
 + facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
-  
+
 
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
