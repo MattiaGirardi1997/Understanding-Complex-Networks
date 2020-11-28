@@ -16,11 +16,11 @@ rm(list.of.packages)
 # load in function
 source("R/diffusion_function.R")
 master_data <- fread("output/undirected/master_measures_2.csv")[, c("Name", "NetworkDomain", "number_edges")]
-master_data[157]
+master_data[482]
 # run diffusion
 set.seed(1234)
 for(n in 1:5){
-  for(j in 157:557){
+  for(j in 482:499){
     simulate.diffusion(j = j, p.infection = 0.5, pct.starting.infected = 0.05, n = n, threshold = 0.7)
   }
 }
