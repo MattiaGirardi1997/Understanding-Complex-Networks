@@ -93,7 +93,7 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
                     col.names = T)
       } else {
         write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+                    file = sprintf("output/diffusion/diffusion_results_%s_v.2.02.csv", n), sep = ",", row.names = F,
                     append = T, col.names = F)
       }
       break

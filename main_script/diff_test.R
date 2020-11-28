@@ -144,41 +144,39 @@ t <- 1
     t <- 1
   }
   t <- t + 1
-}
 
 
 
 
+m <- fread("output/diffusion/diffusion_results_1.csv")
+master_measures_2 <- fread("output/undirected/master_measures_2.csv")
 
+master_measures_2[which(master_measures_2$Name %in% m$Name)]
+which(master_measures_2$Name %in% m$Name)
 
+master_measures_2 <- master_measures_2[which(master_measures_2$Name %in% m$Name)]
+mm <- data.table(master_measures_2, Nodes = m$Nodes, Iterations = m$Iterations_1)
 
-
-
-g <- fread("output/diffusion/diffusion_results_1.csv")
-m <- fread("output/undirected/master_measures_2.csv")
-
-m[Name %in% g$Name]
-
-mm <- data.table(m[Name %in% g$Name], Iterations = g$Iterations,Nodes = g$Nodes)
-mm$ratio <- mm$Nodes/mm$Iterations
 
 fit <- lm(data = mm, Iterations ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness + DegreeAssortativity +
-     DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity)
+     DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity + Nodes + number_edges)
 
 summary(fit)
 
 table(mm$NetworkDomain)
-ggplot(mm, aes(y = ratio, x = AverageDegree)) + geom_point() + stat_smooth(method = "lm")
-ggplot(mm, aes(y = ratio, x = AveragePathLength, color = NetworkDomain)) + geom_point()
-ggplot(mm, aes(y = ratio, x = AverageTransitivity, color = NetworkDomain)) + geom_point()
-ggplot(mm, aes(y = ratio, x = DegreeAssortativity, color = NetworkDomain)) + geom_point()
-ggplot(mm, aes(y = ratio, x = DegreeDistribution, color = NetworkDomain)) + geom_point()
-ggplot(mm[Density < 0.5], aes(y = ratio, x = Density, color = NetworkDomain)) + geom_point()
-ggplot(mm, aes(y = ratio, x = EigenvectorCentrality, color = NetworkDomain)) + geom_point()
-ggplot(mm, aes(y = ratio, x = GlobalTransitivity, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = AverageDegree, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = AveragePathLength, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = AverageTransitivity, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = DegreeAssortativity, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = DegreeDistribution, color = NetworkDomain)) + geom_point()
+ggplot(mm[Density < 0.5], aes(x = Nodes, y = Density, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = EigenvectorCentrality, color = NetworkDomain)) + geom_point()
+ggplot(mm, aes(x = Nodes, y = GlobalTransitivity, color = NetworkDomain)) + geom_point()
 
 
-ggplot(mm[number_edges < 2000], aes(x = number_edges, y = Iterations, color = NetworkDomain)) + geom_point()
+
+ggplot(mm[Nodes < 100], aes(x = Nodes, y = Iterations, color = NetworkDomain)) + geom_point()
+
 ggplot(mm, aes(x = number_edges, y = Nodes)) + geom_point()
 
 
