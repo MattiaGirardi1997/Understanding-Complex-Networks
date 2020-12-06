@@ -14,7 +14,8 @@
 #' @export
 #' @import data.table, igraph, dplyr
 simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
-                                 fread("output/undirected/master_measures_2.csv")[, c("Name", "NetworkDomain", "number_edges")]){
+                                 fread("output/undirected/master_measures_2.csv")[number_edges < 500000 & nodes < 45000,
+                                                                                  c("Name", "NetworkDomain", "number_edges", "nodes")]){
   # load in network
   file <- as.character(master_data[j, Name])
   domain <- as.character(master_data[j, NetworkDomain])
@@ -40,13 +41,13 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
   }
 
   # ordering nodes
-  V_order <- sort(as.integer(nodes))
+  V_ordered <- sort(as.integer(nodes))
 
   # create data frame of infection indices for each node
-  infected_data <- data.table(Nodes = V_order, infected = infected)
-  print(length(which(infected_data$infected))/length(infected_data$infected))
+  infected_data <- data.table(Nodes = V_ordered, infected = infected)
+
   # remove some variables
-  rm(V_order)
+  rm(V_ordered)
 
   ten.thousands <- 0
   t <- 1
@@ -76,10 +77,10 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
 
     print(length(which(infected_data$infected))/length(infected_data$infected))
 
-    # make sure loop does not run indefinitely
+    # make sure loop does not run indefinitely and print limit of infections
     if((t + (ten.thousands*runs)) > (70*n.people)){
-      write.table(data.table(file, domain, n.people, edges, paste("limit:",(n.people*70))),
-                  file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+      write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
+                  file = sprintf("output/diffusion/diffusion_results_%s.csv", n), sep = ",", row.names = F,
                   append = T, col.names = F)
       break
     }

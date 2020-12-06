@@ -23,10 +23,10 @@ file <- as.character(master_data[j, Name])
 domain <- as.character(master_data[j, NetworkDomain])
 edges <- master_data[j, number_edges]
 el <- fread(sprintf("data/all_data/%s.csv", file))
-g <- graph_from_data_frame(el, directed = F)
 
 # get number of nodes
-n.people <- gorder(g)
+nodes <- unique(c(el$Node1, el$Node2))
+n.people <- length(nodes)
 
 # create initial infection information
 infected <- sample(
@@ -43,7 +43,7 @@ if(length(which(infected)) == 0){
 }
 
 # ordering nodes
-V_order <- sort(as.integer(V(g)$name))
+V_order <- sort(as.integer(nodes))
 
 # create data frame of infection indices for each node
 infected_data <- data.table(Nodes = V_order, infected = infected)
@@ -53,7 +53,6 @@ rm(V_order)
 
 ten.thousands <- 0
 t <- 1
-while(t < (runs+2)){
 
   # select random edge
   random.edge <- sample(nrow(el), size = 1)
@@ -75,20 +74,37 @@ while(t < (runs+2)){
       size = 1,
       prob = c(p.infection, 1 - p.infection)
     )]
+
+    if(infected_data[who.susceptible == Nodes, infected] == TRUE){
+      el <- el[-random.edge]
+    }
+  } else if(infected_data[which(el[random.edge, Node1] == infected_data$Nodes),
+                          infected] == TRUE &
+            infected_data[which(el[random.edge, Node2] == infected_data$Nodes),
+                          infected] == TRUE){
+    el <- el[-random.edge]
   }
-  infected_data[who.susceptible == Nodes]
+
   print(length(which(infected_data$infected))/length(infected_data$infected))
 
+  # make sure loop does not run indefinitely
+  if((t + (ten.thousands*runs)) > (70*n.people)){
+    write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
+                file = sprintf("output/diffusion/diffusion_results_%s.csv", n), sep = ",", row.names = F,
+                append = T, col.names = F)
+    break
+  }
+
   # save required number of iterations needed to achieve 70% of nodes infected
-  if(length(which(infected_data$infected))/length(infected_data$infected) >= 0.7){
+  if(length(which(infected_data$infected))/length(infected_data$infected) >= threshold){
     if(j == 1){
       write.table(data.table(Name = file, Domain = domain, Nodes = n.people, Edges = edges,
                              Iterations_1 = (t + (ten.thousands*runs))),
-                  file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+                  file = sprintf("output/diffusion/diffusion_results_%s.csv", n), sep = ",", row.names = F,
                   col.names = T)
     } else {
       write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                  file = sprintf("output/diffusion/diffusion_results_%s_v.2.0.csv", n), sep = ",", row.names = F,
+                  file = sprintf("output/diffusion/diffusion_results_%s.csv", n), sep = ",", row.names = F,
                   append = T, col.names = F)
     }
     break
@@ -97,10 +113,5 @@ while(t < (runs+2)){
     t <- 1
   }
   t <- t + 1
-}
-
-
-
-
 
 

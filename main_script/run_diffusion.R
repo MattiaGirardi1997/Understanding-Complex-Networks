@@ -16,49 +16,48 @@ rm(list.of.packages)
 # load in function
 source("R/diffusion_function.R")
 master_data <- fread("output/undirected/master_measures_2.csv")[, c("Name", "NetworkDomain", "number_edges")]
-master_data[482]
+master_data[87]
 # run diffusion
 set.seed(1234)
-for(n in 1:5){
-  for(j in 482:499){
+for(n in 4:5){
+  for(j in 1:556){
     simulate.diffusion(j = j, p.infection = 0.5, pct.starting.infected = 0.05, n = n, threshold = 0.7)
   }
 }
 
-n.people <- 2
-data.table(as.character(c(n.people, "max")))
-f <- data.table(c(paste(c("max",300), c((n.people*100), c(400), c(800)))))
-f <- data.table(rbind(c(paste("max", 200)), c(300), c(500), c(800), c(paste("max", 300))))
-
-simulate.diffusion(j = 157, p.infection = 0.5, pct.starting.infected = 0.05, n = n, threshold = 0.7)
-
-nw <- read_csv("data/all_data/celegans_interactomes_LCI.csv")
-nodes <- c(nw$Node1, nw$Node2)
-sort(unique(nodes))
-length(unique(nodes))
-
-#########
-#ab 497 noch machen
-#########
-
-
-diffusion_results_1 <- fread("output/diffusion/diffusion_results_1.csv")
-diffusion_results_1$Ratio <- diffusion_results_1$Nodes/diffusion_results_1$Iterations_1
-diffusion_results_1$Ratio2 <- diffusion_results_1$Iterations_1/diffusion_results_1$Nodes
-
-ggplot(diffusion_results_1, aes(x = Nodes, y = Iterations_1, color = Domain)) + geom_point()
-ggplot(diffusion_results_1, aes(x = Iterations_1, fill = Domain)) + geom_histogram()
-ggplot(diffusion_results_1[Ratio2 < 20], aes(x = Ratio2, fill = Domain)) + geom_histogram()
-
-
-diffusion_results_1 <- read_csv("output/diffusion/diffusion_results_1.csv")
-diffusion_results_1$ratio <- diffusion_results_1$Iterations_1/diffusion_results_1$Nodes
-
-master_data <- fread("output/undirected/master_measures_2.csv")[, c("Name", "NetworkDomain", "number_edges")]
-master_data[152]
-
+#######
+# load in function
 source("R/diffusion_function.R")
 
+master_data <-
+  fread("output/undirected/master_measures_2.csv")[number_edges < 500000 & nodes < 45000,
+                                                   c("Name", "NetworkDomain", "number_edges")]
+n <- 10
+for(j in c(266:441,443:535)){
+  simulate.diffusion(j = j, p.infection = 0.5, pct.starting.infected = 0.1, n = n, threshold = 0.7)
+}
+#######
+### - topology 442
+simulate.diffusion(j = 87, p.infection = 0.5, pct.starting.infected = 0.05, n = n, threshold = 0.7)
+
+
+#########
+diff_1 <- fread("output/diffusion/diffusion_results_1.csv")
+diff_2 <- fread("output/diffusion/diffusion_results_2.csv")
+diff_3 <- fread("output/diffusion/diffusion_results_3.csv")
+diff_4 <- fread("output/diffusion/diffusion_results_4.csv")
+diff_6 <- fread("output/diffusion/diffusion_results_6.csv")
+diff_7 <- fread("output/diffusion/diffusion_results_7.csv")
+
+master <- data.table(diff_1$Domain, diff_1$Iterations_1, diff_2$Iterations_1, diff_3$Iterations_1,
+                     diff_4$Iterations_1, diff_6$Iterations_1)
+
+master <- data.table(master$V1, sapply(master[, -1], as.numeric))
+master <- data.table(master, rowMeans(master[, 2:5]))
+
+names(master) <- c("domain", "diff_1", "diff_2", "diff_3", "diff_4", "diff_6", "Mean")
+
+master$sub <- master$Mean - master$diff_6
 
 
 
@@ -70,6 +69,21 @@ source("R/diffusion_function.R")
 
 
 
+master <- data.table(diff_1$Domain, diff_1$Iterations_1, diff_2$Iterations_1, diff_3$Iterations_1,
+                     diff_4$Iterations_1, diff_6$Iterations_1,diff_1$Nodes)
+names(master) <- c("domain", "diff_1", "diff_2", "diff_3", "diff_4", "diff_6", "Nodes")
+master <- data.table(master$domain, sapply(master[, -1], as.numeric))
+d <- melt(master[, -6], id.vars=c("V1", "Nodes"))
+
+
+ggplot(d, aes(x = Nodes, y = value, color = V1)) + geom_point() + stat_smooth()
+
+master_measures_2 <- read_csv("output/undirected/master_measures_2.csv")
+
+master_data = fread("output/undirected/master_measures_2.csv")[number_edges < 500000 & nodes < 45000]
+
+ggplot(master_data, aes(x = nodes, y = number_edges, color = NetworkDomain)) + geom_point()
+table(master_data$NetworkDomain)
 
 for(n in 1:5){
   if(n == 1){
@@ -86,9 +100,7 @@ for(n in 1:5){
 ggplot(master, aes(x = Nodes, y = means, fill = Domain)) + geom_point()
 
 
-master <- fread("output/diffusion/diffusion_results_complete.csv")
-master
-master <- t(master[, 4:8])
+
 
 
 data_long <- tidyr::gather(master, key = type_col, value = categories, -c("Domain", "Name", "Nodes"))
