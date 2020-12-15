@@ -74,12 +74,18 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
       )]
     }
 
+    if (infected_data[which(el[random.edge, Node1] == infected_data$Nodes), infected] ==
+        infected_data[which(el[random.edge, Node2] == infected_data$Nodes), infected]){
+      el <- el[-random.edge]
+    }
+
     print(length(which(infected_data$infected))/length(infected_data$infected))
+    print(random.edge)
 
     # make sure loop does not run indefinitely and print limit of infections
     if((t + (ten.thousands*runs)) > (70*n.people)){
       write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
-                  file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                  file = sprintf("output/diffusion/removed/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                  (pct.starting.infected*100),(p.infection*100),
                                  (threshold*100), n), sep = ",", row.names = F,
                   append = T, col.names = F)
@@ -91,12 +97,12 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
       if(j == 1){
         write.table(data.table(Name = file, Domain = domain, Nodes = n.people, Edges = edges,
                                Iterations_1 = (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("output/diffusion/removed/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F)
       } else {
         write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("output/diffusion/removed/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F,
                     append = T, col.names = F)

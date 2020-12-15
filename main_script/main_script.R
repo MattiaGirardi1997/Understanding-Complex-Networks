@@ -60,14 +60,14 @@ source("R/netzschleuder_functions.R")
 netzschleuder_files <- list.files(path = "data/netzschleuder_data", pattern="*.csv", full.names=T)
 netzschleuder_essentials <- fread("input/import_datasets/netzschleuder_essentials.csv")
 
-# compute network measure for Netzschleuder networks 
+# compute network measure for Netzschleuder networks
 for(i in 1:length(netzschleuder_files)){
   if(netzschleuder_essentials[i, number_edges] < 1000000){
   netzschleuder_network <- fread(netzschleuder_files[i])
   NS.network.measures(netzschleuder_network, i, path = "output/netzschleuder_measures.csv")
   rm(netzschleuder_network)
   } else {
-  i = i + 1 
+  i = i + 1
   }
 }
 
@@ -81,7 +81,7 @@ for(i in 1:length(netzschleuder_essentials$network_name)){
 rm(list = c("append.NS.measures", "compute.NS.measures", "convert.NS",
             "create.igraph.object.NS", "NS.network.measures"))
 
-####### added networks 
+####### added networks
 # load in functions
 source("R/ICON_functions.R")
 
@@ -100,6 +100,31 @@ for(i in 1:length(added_networks_files)){
 
 rm(list = c("append.ICON.measures", "compute.ICON.measures",
             "create.igraph.object.ICON", "ICON.network.measures"))
+
+
+# compute centralization measures
+source("R/centralization_function.R")
+files <- list.files(path = "data/all_data", pattern="*.csv", full.names=TRUE)
+data <- fread("output/undirected/master_measures_2.csv")[, Name]
+
+for(i in 1:length(data)){
+  name <- as.character(data[i])
+  network <- fread(sprintf("data/all_data/%s.csv", name))
+  CTR.network.measures(network, i)
+  rm(network)
+}
+
+centr <- fread("output/undirected/centralization_measures.csv")
+m <- fread("output/undirected/master_measures_2.csv")
+
+master_measures_2 <- data.table(m[, 1:9], BetweennessCentrality = centr$BetweennessCentrality,
+                                m[, 10], ClosenessCentrality = centr$ClosenessCentrality,
+                                m[, 11:12], DegreeCentrality = centr$DegreeCentrality,
+                                m[, 13:15], EigenvectorCentrality_2 = centr$EigenvectorCentrality,
+                                m[, 16:17])
+
+write.table(master_measures_2, file = "output/undirected/master_measures_2.csv", row.names = F, sep = ",")
+
 
 
 

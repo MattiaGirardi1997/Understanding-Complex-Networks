@@ -29,8 +29,11 @@ for(i in 1:length(master_measures_2$ID)){
 master_measures_2$NetworkDomain <- as.factor(master_measures_2$NetworkDomain)
 
 #### logistic regression model
-network_glm_2 <- glm(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-                    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity,
+network_glm_2 <- glm(NetworkDomain ~ AverageComplexity + AverageDegree + AveragePathLength +
+                       AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
+                       Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
+                       Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
+                       GlobalTransitivity + Nodes + Edges,
                    family = binomial, data = master_measures_2)
 
 summary(network_glm_2)
@@ -46,6 +49,7 @@ pred <- table(glm.pred, master_measures_2$NetworkDomain)
 (pred[1] + pred[4])/length(master_measures_2$NetworkDomain)
 # [1] 0.7814208
 
+########################################################################################
 #### caret package
 # ensure results are repeatable
 set.seed(7)
@@ -57,18 +61,36 @@ library(e1071)
 library(mlbench)
 library(caret)
 
+
+master_measures_2 <- fread("output/undirected/master_measures_2.csv")
+#### transform Social,Offline and Social,Online into logical variables
+for(i in 1:length(master_measures_2$ID)){
+  if(master_measures_2[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
+    master_measures_2[i, "NetworkDomain"] <- gsub(".*", "1", master_measures_2[i, "NetworkDomain"])
+  } else {
+    master_measures_2[i, "NetworkDomain"] <- gsub(".*", "0", master_measures_2[i, "NetworkDomain"])
+  }
+}
+
+master_measures_2$NetworkDomain <- as.factor(master_measures_2$NetworkDomain)
+master_measures_2 <- na.omit(master_measures_2)
 # prepare training scheme
-control <- trainControl(method="repeatedcv", number=10, repeats=10)
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
 # train the model
-model <- train(NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-                 DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity
-               , data=master_measures_2, method="lvq", preProcess="scale", trControl=control)
+model <- train(NetworkDomain ~ AverageComplexity + AverageDegree + AveragePathLength +
+                 AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
+                 Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
+                 Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
+                 GlobalTransitivity + Nodes + Edges,
+               data=master_measures_2, method="lvq", preProcess="scale", trControl=control)
 # estimate variable importance
 importance <- varImp(model, scale=FALSE)
 # summarize importance
 print(importance)
 # plot importance
 plot(importance)
+
+
 
 
 #### train classifier
@@ -92,11 +114,11 @@ master_measures_2 <- na.omit(master_measures_2)
 set.seed(1234)
 ind <- sample(2, nrow(master_measures_2), replace=TRUE, prob=c(0.95, 0.33))
 
-master_training <- master_measures_2[ind == 1, 5:13]
-master_test <- master_measures_2[ind == 2, 5:13]
+master_training <- master_measures_2[ind == 1, 5:21]
+master_test <- master_measures_2[ind == 2, 5:21]
 
-master_trainLabels <- master_measures_2[ind==1,4]
-master_testLabels <- master_measures_2[ind==2,4]
+master_trainLabels <- master_measures_2[ind==1,5]
+master_testLabels <- master_measures_2[ind==2,5]
 
 master_pred <- knn(train = master_training, test = master_test, cl = master_trainLabels$NetworkDomain, k = 3)
 
@@ -128,8 +150,11 @@ master_measures_2 <- na.omit(master_measures_2)
 
 ## logistic regression
 default_glm_mod <- train(
-  form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-    DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity + number_edges,
+  form = NetworkDomain ~ AverageComplexity + AverageDegree + AveragePathLength +
+    AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
+    Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
+    Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
+    GlobalTransitivity + Nodes + Edges,
   data = master_measures_2,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
@@ -147,8 +172,11 @@ for(i in 1:100){
   master_training <- master_measures_2[index[, i],]
   master_test <- master_measures_2[-index[, i],]
   default_glm_mod <- train(
-    form = NetworkDomain ~ AverageDegree + AveragePathLength + AverageTransitivity + Closeness +
-      DegreeAssortativity + DegreeDistribution + Density + EigenvectorCentrality + GlobalTransitivity + number_edges,
+    form = NetworkDomain ~ AverageComplexity + AverageDegree + AveragePathLength +
+      AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
+      Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
+      Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
+      GlobalTransitivity + Nodes + Edges,
     data = master_training,
     trControl = trainControl(method = "cv", number = 5),
     method = "glm",

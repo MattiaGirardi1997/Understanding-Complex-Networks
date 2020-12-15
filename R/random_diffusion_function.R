@@ -15,16 +15,31 @@
 #' @import data.table, igraph, dplyr
 simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
                                  fread("output/undirected/master_measures_2.csv")[,c("Name", "NetworkDomain", "Edges", "Nodes")]){
-  # load in network
-  file <- as.character(master_data[j, Name])
-  domain <- as.character(master_data[j, NetworkDomain])
+  # create random network
+  name <- master_data[j, Name]
+  n.people <- master_data[j, Nodes]
   edges <- master_data[j, Edges]
-  el <- fread(sprintf("data/all_data/%s.csv", file))
-
-  # get number of nodes
-  nodes <- unique(c(el$Node1, el$Node2))
-  n.people <- length(nodes)
-
+  domain <- master_data[j, NetworkDomain]
+  
+  if(j == 1){
+    write.table(data.table("Name", "Domain", "Nodes", "Edges", "Iterations"),
+                file = sprintf("output/diffusion/random/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                               (pct.starting.infected*100),(p.infection*100),
+                               (threshold*100), n), sep = ",", row.names = F, col.names = F)
+    } 
+  
+  if(edges >= (n.people*(n.people-1))/2){
+    write.table(data.table(name, domain, n.people, edges, paste("number of edges too large")),
+                           file = sprintf("output/diffusion/random/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                                          (pct.starting.infected*100),(p.infection*100),
+                                          (threshold*100), n), sep = ",", row.names = F,
+                           append = T, col.names = F)
+    } else {
+    el <- data.table(as_edgelist(erdos.renyi.game(n.people, edges, type = "gnm")))
+    names(el) <- c("Node1", "Node2")
+    }
+  
+  
   # create initial infection information
   infected <- sample(
     x = c(T, F),
@@ -32,40 +47,37 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
     replace = T,
     prob = c(pct.starting.infected, 1 - pct.starting.infected)
   )
-
+  
   # ensure at least one node is infected
   if(length(which(infected)) == 0){
     infect <- sample(length(infected), size = 1)
     infected[infect] <- TRUE
   }
-
-  # ordering nodes
-  V_ordered <- sort(as.integer(nodes))
-
+  
   # create data frame of infection indices for each node
-  infected_data <- data.table(Nodes = V_ordered, infected = infected)
-
-  # remove some variables
-  rm(V_ordered)
-
+  infected_data <- data.table(Nodes = 1:n.people, infected = infected)
+  
+  # prepare diffusion simulation
   ten.thousands <- 0
   t <- 1
   while(t < (runs+2)){
-
+    if(edges >= (n.people*(n.people-1))/2){
+      break
+    }
     # select random edge
     random.edge <- sample(nrow(el), size = 1)
     el[random.edge]
     c(infected_data[which(el[random.edge, Node1] == infected_data$Nodes), ],
       infected_data[which(el[random.edge, Node2] == infected_data$Nodes), ])
-
+    
     # determine whether one of the edge's nodes are susceptible
     if (infected_data[which(el[random.edge, Node1] == infected_data$Nodes), infected] !=
         infected_data[which(el[random.edge, Node2] == infected_data$Nodes), infected]){
-
+      
       # detect susceptible node
       who.susceptible <-  c(el[random.edge, Node1],el[random.edge, Node2])[!c(infected_data[el[random.edge, Node1] == infected_data$Nodes, infected],
                                                                               infected_data[el[random.edge, Node2] == infected_data$Nodes, infected])]
-
+      
       # detect susceptible node
       infected_data[who.susceptible == Nodes, infected := sample(
         c(T, F),
@@ -73,30 +85,30 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
         prob = c(p.infection, 1 - p.infection)
       )]
     }
-
+    
     print(length(which(infected_data$infected))/length(infected_data$infected))
-
+    
     # make sure loop does not run indefinitely and print limit of infections
     if((t + (ten.thousands*runs)) > (70*n.people)){
-      write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
-                  file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+      write.table(data.table(name, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
+                  file = sprintf("output/diffusion/random/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                  (pct.starting.infected*100),(p.infection*100),
                                  (threshold*100), n), sep = ",", row.names = F,
                   append = T, col.names = F)
       break
     }
-
+    
     # save required number of iterations needed to achieve 70% of nodes infected
     if(length(which(infected_data$infected))/length(infected_data$infected) >= threshold){
       if(j == 1){
-        write.table(data.table(Name = file, Domain = domain, Nodes = n.people, Edges = edges,
+        write.table(data.table(Name = name, Domain = domain, Nodes = n.people, Edges = edges,
                                Iterations_1 = (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("output/diffusion/random/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F)
       } else {
-        write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+        write.table(data.table(name, domain, n.people, edges, (t + (ten.thousands*runs))),
+                    file = sprintf("output/diffusion/random/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F,
                     append = T, col.names = F)
