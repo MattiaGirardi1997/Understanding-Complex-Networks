@@ -30,12 +30,13 @@ for(n in 1:10){
 source("R/diffusion_function.R")
 
 master_data <- fread("output/undirected/master_measures_2.csv")
+master_data[531]
 
-for(j in 1:534){
-  simulate.diffusion(j = j, p.infection = 0.5, pct.starting.infected = 0.1, n = n, threshold = 0.7)
+for(j in 520:522){
+  simulate.diffusion(j = j, pct.starting.infected = 0.05, p.infection = 0.5, n = n, threshold = 0.7)
 }
 #######
-simulate.diffusion(j = 87, p.infection = 0.5, pct.starting.infected = 0.05, n = n, threshold = 0.7)
+simulate.diffusion(j = j, pct.starting.infected = 0.1, p.infection = 0.5, n = n, threshold = 0.7)
 #######
 
 files <- list.files(path = "output/diffusion", pattern="*.csv", full.names=TRUE)[1:60]
@@ -60,16 +61,18 @@ for(n in 1:6){
   files <- files[-c(1:10)]
 }
 
-res_1 <- fread("output/diffusion/consolidated/results_1.csv")
-res_2 <- fread("output/diffusion/consolidated/results_2.csv")
-res_3 <- fread("output/diffusion/consolidated/results_3.csv")
-res_4 <- fread("output/diffusion/consolidated/results_4.csv")
 
 
-ggplot(res_1, aes(x = Edges, y = Mean, color = Domain)) + geom_point()
-ggplot(res_2, aes(x = Edges, y = Mean, color = Domain)) + geom_point()
-ggplot(res_3, aes(x = Edges, y = Mean, color = Domain)) + geom_point()
-ggplot(res_4, aes(x = Edges, y = Mean, color = Domain)) + geom_point()
+
+
+res_10_100_70 <- fread("output/diffusion/consolidated/10% starting_100% prob_70% threshold.csv")
+res_10_50_70 <- fread("output/diffusion/consolidated/10% starting_50% prob_70% threshold.csv")
+res_5_100_70 <- fread("output/diffusion/consolidated/5% starting_100% prob_70% threshold.csv")
+res_5_50_50 <- fread("output/diffusion/consolidated/5% starting_50% prob_50% threshold.csv")
+res_5_50_70 <- fread("output/diffusion/consolidated/5% starting_50% prob_70% threshold.csv")
+res_5_75_70 <- fread("output/diffusion/consolidated/5% starting_75% prob_70% threshold.csv")
+
+
 
 
 master <- fread("output/undirected/master_measures_2.csv")
@@ -86,23 +89,6 @@ summary(glm_fit)
 
 
 names(master)
-
-files <- list.files(path = "data/all_data", pattern="*.csv", full.names=T)
-n <- fread(files[40])
-g <- graph_from_data_frame(n, directed = F)
-
-
-ggplot(master, aes(x = Nodes, y = means, fill = Domain)) + geom_point()
-
-files <- gsub(".csv", "", files)
-files[!files %in% master$Name]
-
-
-
-
-data_long <- tidyr::gather(master, key = type_col, value = categories, -c("Domain", "Name", "Nodes"))
-ggplot(data_long, aes(x = '', y = categories, col = Name)) +
-  geom_point(position = "fill", stat = "identity")
 
 
 
@@ -141,12 +127,23 @@ threshold <- 0.7
 
 
 
-
-
-
-files <- list.files(path = "output/diffusion", pattern="*.csv", full.names=TRUE)
+files <- list.files(path = "output/diffusion", pattern="*.csv", full.names=TRUE)[1:60]
 for(j in 1:60){
+  name <- files[j]
   n <- fread(files[j])
-  n <- n[-c(91:93)]
-  write.table()
+  n$Iterations_1 <- as.integer(n$Iterations_1)
+  write.table(n, file = sprintf("%s", name), row.names = F, sep = ",")
 }
+files
+
+j <- 1
+name <- files[j]
+n <- fread(files[j])
+n$Iterations_1 <- as.integer(n$Iterations_1)
+write.table(n, file = sprintf("%s1", name), row.names = F, sep = ",")
+
+
+
+
+
+

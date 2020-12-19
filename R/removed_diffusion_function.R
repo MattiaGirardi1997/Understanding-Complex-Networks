@@ -13,7 +13,7 @@
 #' @return number of infection iterations for 70% of nodes infected
 #' @export
 #' @import data.table, igraph, dplyr
-simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
+simulate.removed.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
                                  fread("output/undirected/master_measures_2.csv")[,c("Name", "NetworkDomain", "Edges", "Nodes")]){
   # load in network
   file <- as.character(master_data[j, Name])
@@ -72,15 +72,16 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
         size = 1,
         prob = c(p.infection, 1 - p.infection)
       )]
+
+      if (infected_data[which(el[random.edge, Node1] == infected_data$Nodes), infected] ==
+          infected_data[which(el[random.edge, Node2] == infected_data$Nodes), infected]){
+        el <- el[-random.edge]
+      }
     }
 
-    if (infected_data[which(el[random.edge, Node1] == infected_data$Nodes), infected] ==
-        infected_data[which(el[random.edge, Node2] == infected_data$Nodes), infected]){
-      el <- el[-random.edge]
-    }
+
 
     print(length(which(infected_data$infected))/length(infected_data$infected))
-    print(random.edge)
 
     # make sure loop does not run indefinitely and print limit of infections
     if((t + (ten.thousands*runs)) > (70*n.people)){

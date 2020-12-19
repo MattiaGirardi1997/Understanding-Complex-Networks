@@ -128,6 +128,40 @@ write.table(master_measures_2, file = "output/undirected/master_measures_2.csv",
 
 
 
+files <- list.files(path = "data/all_data", pattern="*.csv", full.names=TRUE)
+data <- fread("output/undirected/master_measures_2.csv")[, Name]
+
+for(i in 1:534){
+  name <- as.character(data[i])
+  network <- fread(sprintf("data/all_data/%s.csv", name))
+  igraph <- create.igraph.object.CTR(network)
+  diameter <- diameter(igraph)
+  if(i == 1){
+    write.table(data.table(name, diameter = diameter), file = "diameter.csv", row.names = F, sep = ",")
+  } else {
+    write.table(data.table(name, diameter), file = "diameter.csv", row.names = F, sep = ",",
+                append = T, col.names = F)
+  }
+  rm(network)
+}
+
+d <- fread("diameter.csv")
 
 
+ggplot(data.table(m[, c(3:5)], d)[NetworkDomain == "Social,Online"], aes(x = Nodes, y = diameter, color = NetworkDomain)) + geom_point()
 
+
+m <- fread("output/undirected/master_measures_2.csv")
+i <- 1
+g <- erdos.renyi.game(m[i, Nodes], 407, type = "gnm")
+
+assortativity.degree(g)
+transitivity(g)
+
+
+files <- list.files(path = "data/all_data", pattern="*.csv", full.names=TRUE)
+g1 <- graph_from_data_frame(fread(files[i]), directed = F)
+assortativity.degree(g1)
+transitivity(g1)
+
+as_edgelist(g)
