@@ -114,20 +114,8 @@ for(i in 1:length(data)){
   rm(network)
 }
 
-centr <- fread("output/undirected/centralization_measures.csv")
-m <- fread("output/undirected/master_measures_2.csv")
-
-master_measures_2 <- data.table(m[, 1:9], BetweennessCentrality = centr$BetweennessCentrality,
-                                m[, 10], ClosenessCentrality = centr$ClosenessCentrality,
-                                m[, 11:12], DegreeCentrality = centr$DegreeCentrality,
-                                m[, 13:15], EigenvectorCentrality_2 = centr$EigenvectorCentrality,
-                                m[, 16:17])
-
-write.table(master_measures_2, file = "output/undirected/master_measures_2.csv", row.names = F, sep = ",")
-
-
-
-
+# compute diameter measure
+source("R/centralization_function.R")
 files <- list.files(path = "data/all_data", pattern="*.csv", full.names=TRUE)
 data <- fread("output/undirected/master_measures_2.csv")[, Name]
 
@@ -145,8 +133,6 @@ for(i in 1:534){
   rm(network)
 }
 
-d <- fread("diameter.csv")
-
 
 ggplot(data.table(m[, c(3:5)], d)[NetworkDomain == "Social,Online"], aes(x = Nodes, y = diameter, color = NetworkDomain)) + geom_point()
 
@@ -157,7 +143,6 @@ g <- erdos.renyi.game(m[i, Nodes], 407, type = "gnm")
 
 assortativity.degree(g)
 transitivity(g)
-
 
 files <- list.files(path = "data/all_data", pattern="*.csv", full.names=TRUE)
 g1 <- graph_from_data_frame(fread(files[i]), directed = F)
