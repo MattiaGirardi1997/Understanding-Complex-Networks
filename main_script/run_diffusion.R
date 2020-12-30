@@ -20,56 +20,37 @@ source("R/diffusion_function.R")
 master_data <- fread("output/undirected/master_measures_2.csv")
 master_data[273]
 
+# run standard diffusion
 for(j in 520:522){
   simulate.diffusion(j = j, pct.starting.infected = 0.05, p.infection = 0.5, n = n, threshold = 0.7)
 }
-#######
-n <- 100
-simulate.diffusion(j = 273, pct.starting.infected = 0.1, p.infection = 1, n = n, threshold = 0.7)
-#######
 
-
-
-
-res_10_100_70 <- fread("output/diffusion/consolidated/10% starting_100% prob_70% threshold.csv")
-res_10_50_70 <- fread("output/diffusion/consolidated/10% starting_50% prob_70% threshold.csv")
-res_5_100_70 <- fread("output/diffusion/consolidated/5% starting_100% prob_70% threshold.csv")
-res_5_50_50 <- fread("output/diffusion/consolidated/5% starting_50% prob_50% threshold.csv")
-res_5_50_70 <- fread("output/diffusion/consolidated/5% starting_50% prob_70% threshold.csv")
-res_5_75_70 <- fread("output/diffusion/consolidated/5% starting_75% prob_70% threshold.csv")
-
-
-
-#### running diffusion with randormly generated graphs
+# running diffusion with randormly generated graphs
 source("R/random_diffusion_function.R")
-
+master_data <- fread("output/undirected/master_measures_2.csv")
 set.seed(1234)
-for(n in 5:6){
-  for(j in 1:253){
+for(n in 1:10){
+  for(j in 1:513){
     simulate.random.diffusion(j = j, p.infection = 1, pct.starting.infected = 0.1, n = n, threshold = 0.7)
   }
 }
 
-#### running diffusion with removal
+# running diffusion with removal
 source("R/removed_diffusion_function.R")
-
+master_data <- fread("output/undirected/master_measures_2.csv")
 set.seed(1234)
 for(n in 1:10){
   for(j in 1:513){
-    simulate.diffusion(j = j, pct.starting.infected = 0.1, p.infection = 0.5,  n = n, threshold = 0.7)
+    simulate.removed.diffusion(j = j, pct.starting.infected = 0.1, p.infection = 0.5,  n = n, threshold = 0.7)
   }
 }
 
 
-simulate.diffusion(j = 92, pct.starting.infected = 0.1, p.infection = 0,5,  n = n, threshold = 0.7)
 
 
 
-table(master_data$NetworkDomain)
 
-pct.starting.infected <- 1
-p.infection <- 1
-threshold <- 0.7
+
 
 
 

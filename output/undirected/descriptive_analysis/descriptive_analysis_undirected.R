@@ -39,8 +39,7 @@ summary(measures$AverageDegree)
 ggplot(measures, aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram() +
   facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 ggplot(measures[AverageDegree < 80], aes(x = AverageDegree, fill = NetworkDomain)) + geom_histogram()
-+
-  facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
++ facet_grid(NetworkDomain ~ . ) + labs(y = "Count")
 
 # Average Path Length
 summary(measures$AveragePathLength)
