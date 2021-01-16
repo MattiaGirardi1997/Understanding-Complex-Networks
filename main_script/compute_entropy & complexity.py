@@ -305,7 +305,7 @@ import os
 os.chdir('/Users/mattia/Desktop/all_data')
 import pandas as pd
 
-for filename in os.listdir('/Users/mattia/Desktop/all_data')[507:560]:
+for filename in os.listdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt'):
      name = filename
      net = Network(adjacency=load(filename, verbose = True))
      entropy = net.entropy()
@@ -322,10 +322,20 @@ for filename in os.listdir('/Users/mattia/Desktop/all_data')[507:560]:
      else:
          df.to_csv('results.csv', mode='a', header=False)
 
-os.listdir('/Users/mattia/Desktop/all_data')[506]
+os.listdir('/Users/mattia/Desktop/all_data')[30:60]
 
 
-
+name = '/Users/mattia/Desktop/all_data/metabolic_networks_from_kegg_(2006)_7.txt'
+net = Network(adjacency=load(filename, verbose = True))
+entropy = net.entropy()
+complexity = net.complexity()
+avg_complexity, std_complexity = net.average_complexity(n_samples=100)
+measures = {'Name': [name],
+                 'Entropy': [entropy],
+                 'Complexity': [complexity],
+                 'AverageComplexity': [avg_complexity]
+                 }
+df = pd.DataFrame(measures, columns = ['Name','Entropy', 'Complexity','AverageComplexity'])
 
 
 

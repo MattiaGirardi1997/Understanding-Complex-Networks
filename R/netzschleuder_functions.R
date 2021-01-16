@@ -64,7 +64,7 @@ compute.NS.measures <- function(igraph.network, i, netzschleuder_data = fread("i
     trnstvty_global <- NA
   }
   measures <- data.frame(ID = ID, Name = network_name, number_edges = num_edges, NetworkDomain = domain, AverageDegree = mean_degree,
-                         AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average, 
+                         AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average,
                          Closeness = clsness, DegreeAssortativity = degree_assortativity,
                          DegreeDistribution = degree_distr, Density = edge_dens, EigenvectorCentrality = eigenv,
                          GlobalTransitivity = trnstvty_global)

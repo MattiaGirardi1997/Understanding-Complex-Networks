@@ -25,7 +25,7 @@ colors <- c("Light Green", "Light Blue", "Khaki", "tomato2", "tomato3", "pink", 
 pie(prct, col = colors, radius = 1.5)
 
 #### correlation matrix
-cor <- cor(measures[, 4:21], use = "complete.obs")
+cor <- cor(removed[, 5:21], use = "complete.obs")
 
 corrplot(cor, method = "color", type = "upper", tl.col = "black", tl.offset = 0.4,
          cl.align.text = "l", tl.srt = 90, addgrid.col = "black")

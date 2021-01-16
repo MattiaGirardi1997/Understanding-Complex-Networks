@@ -21,7 +21,7 @@ create.igraph.object <- function(network){
 #' @return ID, Network Name, Reciprocity, Degree Distribution, Transitivity, Degree Assortativity, Betweenness, Closeness,
 #' Average Path Lenght, Hierarchy, Density
 #' @export
-#' @import data.table
+#' @import data.table, DescTools, igraph
 compute.measures <- function(igraph.network, i, data = fread("removed_loops/output/removed_loops_table.csv")){
   if(length(E(igraph.network)) == 0){
     network_name <- data[i, Name]
@@ -72,7 +72,7 @@ compute.measures <- function(igraph.network, i, data = fread("removed_loops/outp
     if(deg_cent == 0 | is.na(deg_cent)){
       deg_cent <- NA
     }
-    degree_distr <- var(degree_distribution(igraph.network))
+    degree_distr <- Gini(degree_distribution(igraph.network))
     if(degree_distr == 0 | is.na(degree_distr)){
       degree_distr <- NA
     }
@@ -92,12 +92,12 @@ compute.measures <- function(igraph.network, i, data = fread("removed_loops/outp
     if(trnstvty_global == 0 | is.na(trnstvty_global)){
       trnstvty_global <- NA
     }
-    measures <- data.frame(ID = ID, Name = network_name, Nodes = nodes, Edges = num_edges,
-                           NetworkDomain = domain, AverageDegree = mean_degree,
+    measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain,Nodes = nodes,
+                           Edges = num_edges, AverageDegree = mean_degree,
                            AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average,
                            BetweennessCentrality = betw_cent, Closeness = clsness,
                            ClosenessCentrality = clo_cent, DegreeAssortativity = degree_assortativity,
-                           DegreeCentrality = deg_cent, DegreeDistribution = degree_distr,
+                           DegreeCentrality = deg_cent, GiniDegreeDistribution = degree_distr,
                            Density = edge_dens, EigenvectorCentrality = eigenv,
                            EigenvectorCentrality_2 = eigen_cent, GlobalTransitivity = trnstvty_global)
   }

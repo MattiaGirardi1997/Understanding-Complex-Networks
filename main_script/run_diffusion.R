@@ -29,8 +29,8 @@ for(j in 520:522){
 source("R/random_diffusion_function.R")
 master_data <- fread("output/undirected/master_measures_2.csv")
 set.seed(1234)
-for(n in 1:10){
-  for(j in 1:513){
+for(n in 7:8){
+  for(j in 1:254){
     simulate.random.diffusion(j = j, p.infection = 1, pct.starting.infected = 0.1, n = n, threshold = 0.7)
   }
 }
@@ -47,13 +47,6 @@ for(n in 1:10){
 
 
 
-
-
-
-
-
-
-
 files <- list.files(path = "output/diffusion", pattern="*.csv", full.names=TRUE)[1:60]
 for(j in 1:60){
   name <- files[j]
@@ -61,25 +54,4 @@ for(j in 1:60){
   n$Iterations_1 <- as.integer(n$Iterations_1)
   write.table(n, file = sprintf("%s", name), row.names = F, sep = ",")
 }
-
-
-e <- c()
-n <- c()
-nodes <- c()
-j <- 1
-master_data <- fread("output/undirected/master_measures_2.csv")
-for(j in 1:531){
-  j <- 101
-  net <- fread(sprintf("data/all_data/%s.csv", master_data[j, Name]))
-  name <- master_data[j, Name]
-  node <- unique(c(net$Node1, net$Node2))
-  n.people <- length(node)
-  Edges <- nrow(net)
-  e[j] <- Edges
-  n[j] <- name
-  nodes[j] <- n.people
-  rm(net)
-}
-
-
 

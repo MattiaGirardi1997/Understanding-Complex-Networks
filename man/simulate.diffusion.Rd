@@ -8,19 +8,24 @@
   j,
   p.infection,
   pct.starting.infected,
-  runs = 1e+06,
-  master_data = fread("output/undirected/master_measures_2.csv")[, Name]
+  n,
+  threshold,
+  runs = 10000,
+  master_data = fread("output/undirected/master_measures_2.csv")[, c("Name",
+    "NetworkDomain", "Edges", "Nodes")]
 )
 }
 \arguments{
-\item{j}{network index (corresponds to Name column in master_data)}
+\item{j}{network index (corresponds to 'Name' column in master_data)}
 
 \item{p.infection}{probability of infection}
 
 \item{pct.starting.infected}{percentage of nodes starting infected}
+
+\item{n}{number of repetitions of diffusion}
 }
 \value{
-number of iterations for 70% of nodes infected
+number of infection iterations for 70% of nodes infected
 }
 \description{
 Simulate diffusion on network
