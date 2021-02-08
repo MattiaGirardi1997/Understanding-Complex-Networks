@@ -10,18 +10,14 @@ rm(list.of.packages)
 prct <- prop.table(table(removed$NetworkDomain))
 colors <- c("Light Green", "Light Blue", "Khaki", "tomato2", "tomato3", "pink", "plum2")
 pie(prct, col = colors, radius = 1.5)
-
-
-
-
+prct
 
 ########################
 ######## comparing number of edges and nodes before and after removing loops ########
 removed <- fread("removed_loops/output/master_measures_removed_loops.csv")
 MedianDegree <- fread("removed_loops/output/median_degree.csv")[, 5]
 GiniCoefficients <- fread("removed_loops/output/gini_coefficients.csv")[, 5:9]
-Constraint <- fread("removed_loops/output/constraint.csv")[, 5:6]
-removed <- data.table(removed, MedianDegree, GiniCoefficients, Constraint)
+removed <- data.table(removed, MedianDegree, GiniCoefficientsZ)
 removed <- na.omit(removed)
 
 master_data <- fread("output/undirected/master_measures_2.csv")
@@ -89,28 +85,28 @@ for(i in 1:nrow(master_data)){
 
 ### Median
 # based on domain
-ggplot(removed, aes(x = Nodes, y = Median_degree, color = NetworkDomain)) +
-  geom_point() + scale_x_log10() + scale_y_log10()
+ggplot(removed, aes(x = Nodes, y = MedianDegree, color = NetworkDomain)) +
+  geom_point() + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("Black", "Red"))
 
 ### Gini degree
 # based on domain
-ggplot(removed, aes(x = Nodes, y = gini_d.Gini, color = NetworkDomain)) +
-  geom_point() + scale_x_log10() + scale_y_log10()
+ggplot(removed, aes(x = Nodes, y = GiniDegreeCount, color = NetworkDomain)) +
+  geom_point() + scale_x_log10() + ylim(0,1) + scale_color_manual(values = c("Black", "Red"))
 
 ### Gini Transitivity
 # based on domain
-ggplot(removed, aes(x = Nodes, y = gini_t.Gini, color = NetworkDomain)) +
-  geom_point() + scale_x_log10() + scale_y_log10()
+ggplot(removed, aes(x = Nodes, y = GiniTransitivity, color = NetworkDomain)) +
+  geom_point() + scale_x_log10() + ylim(0,1) + scale_color_manual(values = c("Black", "Red"))
 
 ### Gini Constraint
 # based on domain
-ggplot(removed, aes(x = Nodes, y = constraint_gini, color = NetworkDomain)) +
-  geom_point() + scale_x_log10() + scale_y_log10()
+ggplot(removed, aes(x = Nodes, y = GiniConstraint, color = NetworkDomain)) +
+  geom_point() + scale_x_log10() + ylim(0,1) + scale_color_manual(values = c("Black", "Red"))
 
-### Mean Constraiint
+### Mean Constraint
 # based on domain
 ggplot(removed, aes(x = Nodes, y = constraint_mean, color = NetworkDomain)) +
-  geom_point() + scale_x_log10() + scale_y_log10()
+  geom_point() + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("Black", "Red"))
 
 
 ### Average Degree
@@ -319,13 +315,13 @@ model <- train(NetworkDomain ~ AverageDegree + AveragePathLength +
 
 model_removed <- train(
   form = NetworkDomain ~ GiniDegreeCount + GiniBetweenness + GiniTransitivity +
-    GiniEigenvectorCentrality + GiniCloseness + MeanConstraint + GiniConstraint +
+    GiniEigenvectorCentrality + GiniCloseness +
     MedianDegree + AverageDegree + AveragePathLength +
-    AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
+    AverageTransitivity + BetweennessCentrality + ClosenessCentrality +
     Complexity + DegreeAssortativity + DegreeCentrality + GiniDegreeDistribution +
-    Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
+    Density + EigenvectorCentrality + Entropy +
     GlobalTransitivity + Nodes + Edges,
-  data = master_measures_2,
+  data = removed,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
   family = "binomial"
@@ -349,7 +345,7 @@ set.seed(1234)
 # define the control using a random forest selection function
 control <- rfeControl(functions=rfFuncs, method="cv", number=10)
 # run the RFE algorithm
-results_removed <- rfe(removed[,4:23], removed[[3]], sizes=c(1:5), rfeControl=control)
+results_removed <- rfe(removed[,4:28], removed[[3]], sizes=c(1:26), rfeControl=control)
 results <- rfe(master_data[,4:20], master_data[[3]], sizes=c(1:18), rfeControl=control)
 ?rfe
 # summarize the results
@@ -359,7 +355,7 @@ print(results)
 predictors(results_removed)[1:5]
 predictors(results)[1:5]
 # plot the results
-a <- plot(results_removed, type=c("g", "o"))
+plot(results_removed, type=c("g", "o"))
 b <- plot(results, type=c("g", "o"))
 grid.arrange(a, b)
 
@@ -492,23 +488,25 @@ diff_removed3 <- diff_removed3[diff_removed3$Name %in% removed$Name]
 diff <- fread("output/diffusion/consolidated/10% starting_100% prob_70% threshold.csv")
 diff <- diff[diff$Name %in% diff_removed$Name]
 
+removed <- apply(removed[4:31], 2, as.numeric)
+removed <- apply(removed[4:31], 2, scale)
+
 # add mean to measure table
 removed$Mean <- diff_removed$Mean
 removed$Mean2 <- diff_removed2$Mean
 removed$Mean3 <- diff_removed3$Mean
-master_data$Mean <- diff$Mean
-
 
 
 str(removed)
-glm_removed <- lm(cbind(Mean, Mean2, Mean3) ~  GiniCloseness + MeanConstraint + GiniConstraint +
+glm_removed <- lm(scale(cbind(Mean, Mean2, Mean3)) ~  scale(GiniCloseness + MeanConstraint + GiniConstraint +
                      MedianDegree + GiniDegreeCount + GiniTransitivity +
                      AverageDegree + AveragePathLength +
                      AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
-                     Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
+                     Complexity + DegreeAssortativity + DegreeCentrality + GiniDegreeDistribution +
                      Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
-                     GlobalTransitivity + Nodes + Edges, data = removed)
+                     GlobalTransitivity + Nodes + Edges), data = removed)
 
+summary(glm_removed)
 b <- aov(glm_removed)
 TukeyHSD(b)
 summary(b)
@@ -521,13 +519,13 @@ manova(glm_removed)
 Manova(glm_removed)
 
 
-glm_removed2 <- glm(Mean2 ~  constraint_mean + constraint_gini +
+glm_removed2 <- glm(scale(Mean2) ~  scale(constraint_mean + constraint_gini +
                       Median_degree + gini_t.Gini + gini_d.Gini +
                       AverageDegree + AveragePathLength +
                       AverageTransitivity + BetweennessCentrality + Closeness + ClosenessCentrality +
                       Complexity + DegreeAssortativity + DegreeCentrality + DegreeDistribution +
                       Density + EigenvectorCentrality + EigenvectorCentrality_2 + Entropy +
-                      GlobalTransitivity + Nodes + Edges, data = removed)
+                      GlobalTransitivity + Nodes + Edges), data = removed)
 summary(glm_removed2)
 
 glm <- glm(Mean ~  AverageDegree + AveragePathLength +

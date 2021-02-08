@@ -1,9 +1,10 @@
 library(data.table)
 
 # calculate mean of diffusion
-files <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=TRUE)
-names <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=FALSE)
+files <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=TRUE)[31:40]
+names <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=FALSE)[31:40]
 files
+
 for(i in 1:10){
   if(i == 1){
     res_table <- fread(files[i])
