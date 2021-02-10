@@ -1,3 +1,11 @@
+######## install packages ########
+list.of.packages <- c("data.table", "igraph", "jsonlite", "ggplot2", "gridExtra", "mlbench",
+                      "caret", "e1071", "corrplot")
+install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
+sapply(list.of.packages, library, character.only = TRUE)
+rm(list.of.packages)
+
+###### load in diffusion results
 diff_master_data <- fread("removed_loops/diffusion/consolidated/1% starting_50% prob_50% threshold.csv")
 diff_master_data <- diff_master_data[diff_master_data$Name %in% master_data$Name]
 diff_master_data2 <- fread("removed_loops/diffusion/consolidated/1% starting_100% prob_50% threshold.csv")
@@ -89,10 +97,15 @@ master_data$D_1_100_70 <- D_1_100_70$Mean
 master_data$D_5_50_70 <- D_5_50_70$Mean
 master_data$D_5_100_70 <- D_5_100_70$Mean
 summary(master_data)
-
+which(is.na(master_data$D_1_50_50))
+table(D_1_50_50[which(is.na(D_1_50_50$Mean)), Domain])
+table(D_1_100_50[which(is.na(D_1_100_50$Mean)), NetworkDomain])
+table(D_1_100_70[which(is.na(D_1_100_70$Mean)), NetworkDomain])
+table(D_5_50_70[which(is.na(D_5_50_70$Mean)), NetworkDomain])
+table(D_5_100_70[which(is.na(D_5_100_70$Mean)), NetworkDomain])
 
 master_data <- na.omit(master_data)
-master_data[, 4:25] <- data.table(apply(master_data[, 4:25], 2, scale))
+master_data[, 4:29] <- data.table(apply(master_data[, 4:29], 2, scale))
 
 ## diffusion regression
 diffusion_lm <- train(cbind(D_1_50_50, D_1_100_50, D_1_100_70, D_5_50_70, D_5_100_70) ~
@@ -127,7 +140,7 @@ car::vif(diffusion_lm)
 summary(diffusion_lm)
 
 response <- summary(diffusion_lm)
-R1 <- data.frame(response$coefficients)
+R1 <- data.frame(response$`Response D_1_50_50`$coefficients)
 R1 <- data.table(ID = 1:(nrow(R1)-1), Variable = rownames(R1)[-1], data.table(R1)[-1])
 R1 <- R1[order(abs(R1$Estimate), decreasing = T)]
 R2 <- data.frame(response$`Response D_1_100_50`$coefficients)
@@ -149,7 +162,22 @@ table <- head(data.frame(D_1_50_50 = R1$ID, D_1_100_50 = R2$ID, D_1_100_70 = R3$
 res <- data.table(D_1_50_50 = R1$Variable, D_1_100_50 = R2$Variable, D_1_100_70 = R3$Variable,
                   D_5_50_70 = R4$Variable, D_5_100_70 = R5$Variable)
 
-cor(table[1:10,], method = "spearman") %>%
+estimate <- data.table(Measure = rownames(R1)[-1],D_1_50_50 = R1$Estimate[-1], D_1_100_50 = R2$Estimate[-1],
+                       D_1_100_70 = R3$Estimate[-1], D_5_50_70 = R4$Estimate[-1],
+                       D_5_100_70 = R5$Estimate[-1])
+
+estimate_table <- melt(estimate, id.vars = "Measure")
+ggplot(estimate_table, aes(x = reorder(Measure, abs(value)), y = value, fill = variable)) +
+  geom_col(position = "dodge") + coord_flip() + labs(fill = "Simulation") +
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_line(color = "gray20",
+                                        size = 0.1),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_text(color = "black"))
+
+
+cor(table, method = "spearman") %>%
   corrplot(method = "number", type = "upper", tl.col = "black", tl.offset = 0.4,
            cl.align.text = "l", tl.srt = 90, addgrid.col = "black")
 
@@ -157,7 +185,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))install.packages("BiocManag
 BiocManager::install("gespeR")
 library(gespeR)
 
-rank_corr_plot <- matrix(nrow = 4, ncol = 4)
+rank_corr_plot <- matrix(nrow = 5, ncol = 5)
 list <- c("D_1_50_50", "D_1_100_50", "D_1_100_70", "D_5_50_70", "D_5_100_70")
 for(i in 1:length(list)){
   for(j in 1:length(list)){

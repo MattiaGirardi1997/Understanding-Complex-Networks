@@ -221,6 +221,7 @@ n <- ggplot(master_data, aes(x = Nodes, y = GiniEigenvectorCentrality, color = N
                                                           axis.title.y = element_text(size = 9),
                                                           axis.title.x = element_blank(),
                                                           axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
 ### Gini Transitivity
 o <- ggplot(master_data, aes(x = Nodes, y = GiniTransitivity, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +

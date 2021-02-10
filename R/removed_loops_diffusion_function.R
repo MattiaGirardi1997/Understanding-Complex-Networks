@@ -84,8 +84,6 @@ simulate.removed.loops.diffusion <- function(j, p.infection, pct.starting.infect
       )]
     }
 
-    print(length(which(infected_data$infected))/length(infected_data$infected))
-
     # make sure loop does not run indefinitely and print limit of infections
     if((t + (ten.thousands*runs)) > (70*n.people)){
       write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))

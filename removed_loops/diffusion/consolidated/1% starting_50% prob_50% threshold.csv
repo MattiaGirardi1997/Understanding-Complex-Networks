@@ -1,4 +1,4 @@
-"Name","Domain","Nodes","Edges","Iteration_1","Iteration_2","Iteration_3","Iteration_4","Iteration_5","Iteration_6","Iteration_7","Iteration_8","Iteration_9","Iteration_10","Mean"
+"Name","NetworkDomain","Nodes","Edges","Iteration_1","Iteration_2","Iteration_3","Iteration_4","Iteration_5","Iteration_6","Iteration_7","Iteration_8","Iteration_9","Iteration_10","Mean"
 "7th_graders","Social,Offline",29,250,115,51,170,51,129,93,187,78,100,170,114.4
 "add_health_comm1","Social,Offline",69,220,549,367,441,367,265,341,485,658,541,441,445.5
 "add_health_comm10","Social,Offline",678,2795,4099,2876,4020,2876,4511,4057,3665,3851,4131,4020,3810.6
