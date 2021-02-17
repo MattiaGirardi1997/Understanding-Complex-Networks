@@ -11,7 +11,7 @@
   n,
   threshold,
   runs = 10000,
-  master_data = fread("removed_loops/output/removed_loops_measures.csv")[, 2:5]
+  master_data = fread("removed_loops/output/master_measures_removed_loops.csv")[, 2:5]
 )
 }
 \arguments{

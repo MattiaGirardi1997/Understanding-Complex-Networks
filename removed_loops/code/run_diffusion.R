@@ -19,10 +19,10 @@ rm(list.of.packages)
 source("R/removed_loops_diffusion_function.R")
 master_data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 set.seed(1234)
-for(n in 3:10){
+for(n in 1:10){
   for(j in 1:nrow(master_data)){
-    simulate.removed.loops.diffusion(j = j, pct.starting.infected = 0.01, p.infection = 0.5, n = n,
-                                     threshold = 0.7)
+    simulate.removed.loops.diffusion(j = j, pct.starting.infected = 0.001, p.infection = 1, n = n,
+                                     threshold = 0.5)
   }
 }
 
@@ -30,10 +30,10 @@ n <- 1
 simulate.removed.loops.diffusion(j = 128, p.infection = 1, pct.starting.infected = 0.1, n = n,
                                  threshold = 0.7)
 
-
+# 0.1-100-50 ...
 # 1-100-70 done
 # 1-100-50 done
-# 1-50-70
+# 1-50-70 done
 # 1-50-50 done
 # 5-100-70 done
 # 5-50-70 done

@@ -40,66 +40,96 @@ compute.measures <- function(igraph.network, i, data = fread("removed_loops/outp
     network_name <- data[i, Name]
     domain <- data[i, NetworkDomain]
 
-    mean_degree <- mean(degree(igraph.network))
-    if(mean_degree == 0 | is.na(mean_degree)){
-      mean_degree <- NA
-    }
+    # other measures
     avg_path_length <- average.path.length(igraph.network)
     if(avg_path_length == 0| is.na(avg_path_length)){
       avg_path_length <- NA
-    }
-    trnstvty_average <- transitivity(igraph.network, type = "average")
-    if(trnstvty_average == 0 | is.na(trnstvty_average)){
-      trnstvty_average <- NA
-    }
-    betw_cent <- centr_betw(igraph.network)$centralization
-    if(is.na(betw_cent)){
-      betw_cent <- NA
-    }
-    clsness <- var(closeness(igraph.network, normalized = T))
-    if(clsness == 0| is.na(clsness)){
-      clsness <- NA
-    }
-    clo_cent <- centr_clo(igraph.network)$centralization
-    if(clo_cent == 0| is.na(clo_cent)){
-      clo_cent <- NA
     }
     degree_assortativity <- assortativity.degree(igraph.network)
     if(is.null(degree_assortativity) | is.na(degree_assortativity)){
       degree_assortativity <- NA
     }
-    deg_cent <- centr_degree(igraph.network)$centralization
-    if(deg_cent == 0 | is.na(deg_cent)){
-      deg_cent <- NA
-    }
-    degree_distr <- Gini(degree_distribution(igraph.network))
-    if(degree_distr == 0 | is.na(degree_distr)){
-      degree_distr <- NA
-    }
     edge_dens <- edge_density(igraph.network)
     if(edge_dens == 0 | is.na(edge_dens)){
       edge_dens <- NA
     }
-    eigenv <- var(eigen_centrality(igraph.network)$vector)
-    if(eigenv == 0 | is.na(eigenv)){
-      eigenv <- NA
-    }
-    eigen_cent <- centr_eigen(igraph.network)$centralization
-    if(eigen_cent == 0 | is.na(eigen_cent)){
-      eigen_cent <- NA
+
+    # tranistivity
+    trnstvty_average <- transitivity(igraph.network, type = "average")
+    if(trnstvty_average == 0 | is.na(trnstvty_average)){
+      trnstvty_average <- NA
     }
     trnstvty_global <- transitivity(igraph.network, type = "global")
     if(trnstvty_global == 0 | is.na(trnstvty_global)){
       trnstvty_global <- NA
     }
+    giniTransitivity <- Gini(transitivity(igraph.network, type = "local"), na.rm = T)
+    if(giniTransitivity == 0 | is.na(giniTransitivity)){
+      giniTransitivity <- NA
+    }
+
+    # degree
+    mean_degree <- mean(degree(igraph.network))
+    if(mean_degree == 0 | is.na(mean_degree)){
+      mean_degree <- NA
+    }
+    median_degree <- median(degree(igraph.network))
+    if(median_degree == 0 | is.na(median_degree)){
+      median_degree <- NA
+    }
+
+    # centrality measures
+    betw_cent <- centr_betw(igraph.network)$centralization
+    if(is.na(betw_cent)){
+      betw_cent <- NA
+    }
+    clo_cent <- centr_clo(igraph.network)$centralization
+    if(clo_cent == 0| is.na(clo_cent)){
+      clo_cent <- NA
+    }
+    deg_cent <- centr_degree(igraph.network)$centralization
+    if(deg_cent == 0 | is.na(deg_cent)){
+      deg_cent <- NA
+    }
+    eigen_cent <- centr_eigen(igraph.network)$centralization
+    if(eigen_cent == 0 | is.na(eigen_cent)){
+      eigen_cent <- NA
+    }
+
+    # Gini coefficient
+    giniBetweenness <- Gini(centr_betw(igraph.network)$res)
+    if(giniBetweenness == 0 | is.na(giniBetweenness)){
+      giniBetweenness <- NA
+    }
+    giniCloseness <- Gini(centr_clo(igraph.network)$res)
+    if(giniCloseness == 0 | is.na(giniCloseness)){
+      giniCloseness <- NA
+    }
+    giniDegree <- Gini(degree_distribution(igraph.network))
+    if(giniDegree == 0 | is.na(giniDegree)){
+      giniDegree <- NA
+    }
+    giniEigenvectorCentrality <- Gini(centr_eigen(igraph.network)$vector)
+    if(giniEigenvectorCentrality == 0 | is.na(giniEigenvectorCentrality)){
+      giniEigenvectorCentrality <- NA
+    }
+
     measures <- data.frame(ID = ID, Name = network_name, NetworkDomain = domain,Nodes = nodes,
-                           Edges = num_edges, AverageDegree = mean_degree,
-                           AveragePathLength = avg_path_length, AverageTransitivity = trnstvty_average,
-                           BetweennessCentrality = betw_cent, Closeness = clsness,
-                           ClosenessCentrality = clo_cent, DegreeAssortativity = degree_assortativity,
-                           DegreeCentrality = deg_cent, GiniDegreeDistribution = degree_distr,
-                           Density = edge_dens, EigenvectorCentrality = eigenv,
-                           EigenvectorCentrality_2 = eigen_cent, GlobalTransitivity = trnstvty_global)
+                           Edges = num_edges,
+
+                           AveragePathLength = avg_path_length, DegreeAssortativity = degree_assortativity,
+                           Density = edge_dens,
+
+                           AverageTransitivity = trnstvty_average, GiniTransitivity = giniTransitivity,
+                           GlobalTransitivity = trnstvty_global,
+
+                           AverageDegree = mean_degree, MedianDegree = median_degree,
+
+                           BetweennessCentrality = betw_cent, ClosenessCentrality = clo_cent,
+                           DegreeCentrality = deg_cent, EigenvectorCentrality = eigen_cent,
+
+                           GiniBetweenness = giniBetweenness, GiniCloseness = giniCloseness,
+                           GiniDegreeDistribution = giniDegree, GiniEigenvectorCentrality = giniEigenvectorCentrality)
   }
 }
 
@@ -127,7 +157,7 @@ append.measures <- function(measures, i, path = "removed_loops/output/removed_lo
 #' @return data table
 #' @export
 #' @import data.table
-removed.loops.network.measures <- function(network, i, path = "removed_loops/output/removed_loops_measures.csv"){
+removed.loops.network.measures <- function(network, i, path = path){
   igraph.network <- create.igraph.object(network)
   measures <- compute.measures(igraph.network, i)
   append.measures(measures, i, path)

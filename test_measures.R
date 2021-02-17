@@ -3,37 +3,40 @@ library(igraph)
 library(DescTools)
 library(ggplot2)
 data <- fread("removed_loops/output/master_measures_removed_loops.csv")
-i <- 1
+i <- 272
 net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
 g <- graph_from_data_frame(net, directed = F)
-edge_density(g)
+is.connected(g)
+max(components(g)$csize)
+is.connected(decompose(g, min.vertices = max(components(g)$csize))[[1]])
 
-centr_betw(g)$centralization
-Gini(degree.distribution(g))
-max(degree(g))
+deg <- data.table(Degree = 1:length(degree(g)), k = degree(g))
+d <- data.table(k = 0:max(degree(g)), dist = degree.distribution(g))
+ggplot(d, aes(x = k, y = dist)) + geom_col(width = 3)
+ggplot(deg, aes(x = Degree, y = k)) + geom_col(width = 3)
+
+plot(g)
+
+?degree.distribution(g)
 
 edge_density(g, loops = F)
 length(E(g))
 V(g)
 
-### Constraint
-data <- fread("removed_loops/output/removed_loops_table.csv")
+data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 for(i in 1:nrow(data)){
   name <- data[i, Name]
   net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
   net <- graph_from_data_frame(net, directed = F)
-  MeanConstraint <- mean(constraint(net))
-  GiniConstraint <- Gini(constraint(net))
   if(i == 1){
-    write.table(data.table(data[i, 1:4], MeanConstraint, GiniConstraint), file = "removed_loops/output/constraint.csv",
-                row.names = F, sep = ",")
+    res <- data.table(data[i, 1:4], Connected = is.connected(net), Components = components(net)$no)
   } else {
-    write.table(data.table(data[i, 1:4], MeanConstraint, GiniConstraint), file = "removed_loops/output/constraint.csv",
-                row.names = F, sep = ",", col.names = F, append = T)
+    res <- rbind(res, data.table(data[i, 1:4], Connected = is.connected(net),
+                                 Components = components(net)$no))
   }
-  rm(net, MeanConstraint, GiniConstraint)
 }
 
+length(which(res$Connected))
 ### Gini Coefficients
 data <- fread("removed_loops/output/removed_loops_table.csv")
 for(i in 1:nrow(data)){
@@ -77,4 +80,23 @@ for(i in 1:nrow(data)){
   }
   rm(net, MedianDegree)
 }
+
+
+
+
+
+
+tab <- data[which(!data$Name %in% master_data$Name), c("Name", "NetworkDomain")]
+res[res$Name %in% tab$Name]
+
+data$Name %in% master_data$Name
+
+
+
+
+
+
+
+
+
 
