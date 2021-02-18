@@ -6,7 +6,10 @@ rm(list.of.packages)
 
 ### Decriptives
 master_data <- fread("removed_loops/output/master_measures_removed_loops.csv")
-
+summary(master_data$AverageTransitivity)
+summary(master_data2$AverageTransitivity)
+which(is.na(master_data$AverageTransitivity))
+master_data[226]
 ## transform Social,Offline and Social,Online into logical variables
 for(i in 1:nrow(master_data)){
   if(master_data[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
@@ -16,15 +19,15 @@ for(i in 1:nrow(master_data)){
   }
 }
 
-for(i in 1:nrow(master_data)){
-  if(master_data[i, NetworkDomain] == "Social,Offline"){
-    master_data[i, "NetworkDomain"] <- gsub(".*", "Social,Offline", master_data[i, "NetworkDomain"])
-  } else if (master_data[i, NetworkDomain] == "Social,Online") {
-    master_data[i, "NetworkDomain"] <- gsub(".*", "Social,Online", master_data[i, "NetworkDomain"])
-  } else {
-    master_data[i, "NetworkDomain"] <- gsub(".*", "Non-Social", master_data[i, "NetworkDomain"])
-  }
-}
+#for(i in 1:nrow(master_data)){
+#  if(master_data[i, NetworkDomain] == "Social,Offline"){
+#    master_data[i, "NetworkDomain"] <- gsub(".*", "Social,Offline", master_data[i, "NetworkDomain"])
+#  } else if (master_data[i, NetworkDomain] == "Social,Online") {
+#    master_data[i, "NetworkDomain"] <- gsub(".*", "Social,Online", master_data[i, "NetworkDomain"])
+#  } else {
+#    master_data[i, "NetworkDomain"] <- gsub(".*", "Non-Social", master_data[i, "NetworkDomain"])
+#  }
+#}
 
 ### Descriptives of nodes and edges
 ggplot(master_data, aes(x = Nodes, y = Edges, color = NetworkDomain)) +
@@ -52,20 +55,8 @@ ggplot(master_data, aes(x = Nodes, y = Edges, color = NetworkDomain)) +
 
 ##### Scatterplots #####
 #### Other Measures
-### Average Degree
-a <- ggplot(master_data, aes(x = Nodes, y = AverageDegree, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Average Degree*") + theme(legend.position = "none",
-                                  panel.background = element_blank(),
-                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                  panel.grid.minor = element_line(colour = "gray85"),
-                                  axis.ticks = element_blank(),
-                                  axis.title.y = element_text(size = 9),
-                                  axis.title.x = element_blank(),
-                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
 ### Average Path Length
-b <- ggplot(master_data, aes(x = Nodes, y = AveragePathLength, color = NetworkDomain)) +
+a <- ggplot(master_data, aes(x = Nodes, y = AveragePathLength, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Average Path Length*") + theme(legend.position = "none",
                                        panel.background = element_blank(),
@@ -76,32 +67,8 @@ b <- ggplot(master_data, aes(x = Nodes, y = AveragePathLength, color = NetworkDo
                                        axis.title.x = element_blank(),
                                        axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
-### Average Transitivity
-c <- ggplot(master_data, aes(x = Nodes, y = AverageTransitivity, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Average Transitivity") + ylim(0,1) + theme(legend.position = "none",
-                                                   panel.background = element_blank(),
-                                                   panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                   panel.grid.minor = element_line(colour = "gray85"),
-                                                   axis.ticks = element_blank(),
-                                                   axis.title.y = element_text(size = 9),
-                                                   axis.title.x = element_blank(),
-                                                   axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Complexity
-d <- ggplot(master_data, aes(x = Nodes, y = Complexity, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Complexity") + ylim(0,1) + theme(legend.position = "none",
-                                         panel.background = element_blank(),
-                                         panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                         panel.grid.minor = element_line(colour = "gray85"),
-                                         axis.ticks = element_blank(),
-                                         axis.title.y = element_text(size = 9),
-                                         axis.title.x = element_blank(),
-                                         axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
 ### Degree Assortativity
-e <- ggplot(master_data, aes(x = Nodes, y = DegreeAssortativity, color = NetworkDomain)) +
+b <- ggplot(master_data, aes(x = Nodes, y = DegreeAssortativity, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Degree Assortativity") + ylim(-1,1) + theme(legend.position = "none",
                                                     panel.background = element_blank(),
@@ -111,23 +78,10 @@ e <- ggplot(master_data, aes(x = Nodes, y = DegreeAssortativity, color = Network
                                                     axis.title.y = element_text(size = 9),
                                                     axis.title.x = element_blank(),
                                                     axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
 ### Density
-f <- ggplot(master_data, aes(x = Nodes, y = Density, color = NetworkDomain)) +
+c <- ggplot(master_data, aes(x = Nodes, y = Density, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Density") + ylim(0,1) + theme(legend.position = "none",
-                                       panel.background = element_blank(),
-                                       panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                       panel.grid.minor = element_line(colour = "gray85"),
-                                       axis.ticks = element_blank(),
-                                       axis.title.y = element_text(size = 9),
-                                       axis.title.x = element_blank(),
-                                       axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Entropy
-g <- ggplot(master_data, aes(x = Nodes, y = Entropy, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Entropy") + ylim(0,1) + theme(legend.position = "none",
                                       panel.background = element_blank(),
                                       panel.grid.major = element_line(colour = "gray85", size = 0.5),
                                       panel.grid.minor = element_line(colour = "gray85"),
@@ -136,8 +90,20 @@ g <- ggplot(master_data, aes(x = Nodes, y = Entropy, color = NetworkDomain)) +
                                       axis.title.x = element_blank(),
                                       axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
+### Average Degree
+d <- ggplot(master_data, aes(x = Nodes, y = AverageDegree, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Average Degree*") + theme(legend.position = "none",
+                                  panel.background = element_blank(),
+                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                  panel.grid.minor = element_line(colour = "gray85"),
+                                  axis.ticks = element_blank(),
+                                  axis.title.y = element_text(size = 9),
+                                  axis.title.x = element_blank(),
+                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
 ### Median Degree
-h <- ggplot(master_data, aes(x = Nodes, y = MedianDegree, color = NetworkDomain)) +
+e <- ggplot(master_data, aes(x = Nodes, y = MedianDegree, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Median Degree*") + theme(legend.position = "none",
                                  panel.background = element_blank(),
@@ -148,82 +114,33 @@ h <- ggplot(master_data, aes(x = Nodes, y = MedianDegree, color = NetworkDomain)
                                  axis.title.x = element_blank(),
                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
+
+### Average Transitivity
+f <- ggplot(master_data, aes(x = Nodes, y = AverageTransitivity, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Average Transitivity") + ylim(0,1) + theme(legend.position = "none",
+                                                   panel.background = element_blank(),
+                                                   panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                   panel.grid.minor = element_line(colour = "gray85"),
+                                                   axis.ticks = element_blank(),
+                                                   axis.title.y = element_text(size = 9),
+                                                   axis.title.x = element_blank(),
+                                                   axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
 ### Global Transivity
-i <- ggplot(master_data, aes(x = Nodes, y = GlobalTransitivity, color = NetworkDomain)) +
+g <- ggplot(master_data, aes(x = Nodes, y = GlobalTransitivity, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("GlobalTransitivity") + ylim(0,1) + theme(legend.position = "none",
-                                                 panel.background = element_blank(),
-                                                 panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                 panel.grid.minor = element_line(colour = "gray85"),
-                                                 axis.ticks = element_blank(),
-                                                 axis.title.y = element_text(size = 9),
-                                                 axis.title.x = element_blank(),
-                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-#grid.arrange(a, b, c, d, e, f, g, h, i, j)
-#### Gini Coefficients
-### Gini Betweenness
-j <- ggplot(master_data, aes(x = Nodes, y = GiniBetweenness, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Betweenness") + ylim(0,1) + theme(legend.position = "none",
-                                               panel.background = element_blank(),
-                                               panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                               panel.grid.minor = element_line(colour = "gray85"),
-                                               axis.ticks = element_blank(),
-                                               axis.title.y = element_text(size = 9),
-                                               axis.title.x = element_blank(),
-                                               axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Closeness
-k <- ggplot(master_data, aes(x = Nodes, y = GiniCloseness, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Closeness") + ylim(0,1) + theme(legend.position = "none",
-                                             panel.background = element_blank(),
-                                             panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                             panel.grid.minor = element_line(colour = "gray85"),
-                                             axis.ticks = element_blank(),
-                                             axis.title.y = element_text(size = 9),
-                                             axis.title.x = element_blank(),
-                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Degree Count
-l <- ggplot(master_data, aes(x = Nodes, y = GiniDegreeCount, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Degree Count") + ylim(0,1) + theme(legend.position = "none",
-                                                panel.background = element_blank(),
-                                                panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                panel.grid.minor = element_line(colour = "gray85"),
-                                                axis.ticks = element_blank(),
-                                                axis.title.y = element_text(size = 9),
-                                                axis.title.x = element_blank(),
-                                                axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Degree Distribution
-m <- ggplot(master_data, aes(x = Nodes, y = GiniDegreeDistribution, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Degree Distribution") + ylim(0,1) + theme(legend.position = "none",
-                                                       panel.background = element_blank(),
-                                                       panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                       panel.grid.minor = element_line(colour = "gray85"),
-                                                       axis.ticks = element_blank(),
-                                                       axis.title.y = element_text(size = 9),
-                                                       axis.title.x = element_blank(),
-                                                       axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Eigenvector Centrality
-n <- ggplot(master_data, aes(x = Nodes, y = GiniEigenvectorCentrality, color = NetworkDomain)) +
-  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Eigenvector Centrality") + ylim(0,1) + theme(legend.position = "none",
-                                                          panel.background = element_blank(),
-                                                          panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                          panel.grid.minor = element_line(colour = "gray85"),
-                                                          axis.ticks = element_blank(),
-                                                          axis.title.y = element_text(size = 9),
-                                                          axis.title.x = element_blank(),
-                                                          axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+  ylab("Global Transitivity") + ylim(0,1) + theme(legend.position = "none",
+                                                  panel.background = element_blank(),
+                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                  panel.grid.minor = element_line(colour = "gray85"),
+                                                  axis.ticks = element_blank(),
+                                                  axis.title.y = element_text(size = 9),
+                                                  axis.title.x = element_blank(),
+                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Gini Transitivity
-o <- ggplot(master_data, aes(x = Nodes, y = GiniTransitivity, color = NetworkDomain)) +
+h <- ggplot(master_data, aes(x = Nodes, y = GiniTransitivity, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Gini Transitivity") + ylim(0,1) + theme(legend.position = "none",
                                                 panel.background = element_blank(),
@@ -233,10 +150,9 @@ o <- ggplot(master_data, aes(x = Nodes, y = GiniTransitivity, color = NetworkDom
                                                 axis.title.y = element_text(size = 9),
                                                 axis.title.x = element_blank(),
                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-#grid.arrange(k, l, m, n, o, p, q)
-#### Centrality Measures
+
 ### Betweenness Centrality
-p <- ggplot(master_data, aes(x = Nodes, y = BetweennessCentrality, color = NetworkDomain)) +
+i <- ggplot(master_data, aes(x = Nodes, y = BetweennessCentrality, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Betweenness Centrality") + ylim(0,1) + theme(legend.position = "none",
                                                      panel.background = element_blank(),
@@ -247,7 +163,7 @@ p <- ggplot(master_data, aes(x = Nodes, y = BetweennessCentrality, color = Netwo
                                                      axis.title.x = element_blank(),
                                                      axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 ### Closeness Centrality
-q <- ggplot(master_data, aes(x = Nodes, y = ClosenessCentrality, color = NetworkDomain)) +
+j <- ggplot(master_data, aes(x = Nodes, y = ClosenessCentrality, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Closeness Centrality") + ylim(0,1) + theme(legend.position = "none",
                                                    panel.background = element_blank(),
@@ -259,7 +175,7 @@ q <- ggplot(master_data, aes(x = Nodes, y = ClosenessCentrality, color = Network
                                                    axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Degree Centrality
-r <- ggplot(master_data, aes(x = Nodes, y = DegreeCentrality, color = NetworkDomain)) +
+k <- ggplot(master_data, aes(x = Nodes, y = DegreeCentrality, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Degree Centrality") + ylim(0,1) + theme(legend.position = "none",
                                                 panel.background = element_blank(),
@@ -271,7 +187,7 @@ r <- ggplot(master_data, aes(x = Nodes, y = DegreeCentrality, color = NetworkDom
                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Eigenvector Centrality
-s <- ggplot(master_data, aes(x = Nodes, y = EigenvectorCentrality, color = NetworkDomain)) +
+l <- ggplot(master_data, aes(x = Nodes, y = EigenvectorCentrality, color = NetworkDomain)) +
   geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Eigenvector Centrality") + ylim(0,1) + theme(legend.position = "none",
                                                      panel.background = element_blank(),
@@ -282,62 +198,102 @@ s <- ggplot(master_data, aes(x = Nodes, y = EigenvectorCentrality, color = Netwo
                                                      axis.title.x = element_blank(),
                                                      axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
-t <- as_ggplot(get_legend(ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
+### Gini Betweenness
+m <- ggplot(master_data, aes(x = Nodes, y = GiniBetweenness, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Betweenness") + ylim(0,1) + theme(legend.position = "none",
+                                               panel.background = element_blank(),
+                                               panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                               panel.grid.minor = element_line(colour = "gray85"),
+                                               axis.ticks = element_blank(),
+                                               axis.title.y = element_text(size = 9),
+                                               axis.title.x = element_blank(),
+                                               axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Gini Closeness
+n <- ggplot(master_data, aes(x = Nodes, y = GiniCloseness, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Closeness") + ylim(0,1) + theme(legend.position = "none",
+                                             panel.background = element_blank(),
+                                             panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                             panel.grid.minor = element_line(colour = "gray85"),
+                                             axis.ticks = element_blank(),
+                                             axis.title.y = element_text(size = 9),
+                                             axis.title.x = element_blank(),
+                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Gini Degree Distribution
+o <- ggplot(master_data, aes(x = Nodes, y = GiniDegreeDistribution, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Degree Distribution") + ylim(0,1) + theme(legend.position = "none",
+                                                       panel.background = element_blank(),
+                                                       panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                       panel.grid.minor = element_line(colour = "gray85"),
+                                                       axis.ticks = element_blank(),
+                                                       axis.title.y = element_text(size = 9),
+                                                       axis.title.x = element_blank(),
+                                                       axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Gini Eigenvector Centrality
+p <- ggplot(master_data, aes(x = Nodes, y = GiniEigenvectorCentrality, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Eigenvector Centrality") + ylim(0,1) + theme(legend.position = "none",
+                                                          panel.background = element_blank(),
+                                                          panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                          panel.grid.minor = element_line(colour = "gray85"),
+                                                          axis.ticks = element_blank(),
+                                                          axis.title.y = element_text(size = 9),
+                                                          axis.title.x = element_blank(),
+                                                          axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Complexity
+q <- ggplot(master_data, aes(x = Nodes, y = Complexity, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Complexity") + ylim(0,1) + theme(legend.position = "none",
+                                         panel.background = element_blank(),
+                                         panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                         panel.grid.minor = element_line(colour = "gray85"),
+                                         axis.ticks = element_blank(),
+                                         axis.title.y = element_text(size = 9),
+                                         axis.title.x = element_blank(),
+                                         axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Entropy
+r <- ggplot(master_data, aes(x = Nodes, y = Entropy, color = NetworkDomain)) +
+  geom_point(size = 1) + scale_x_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Entropy") + ylim(0,1) + theme(legend.position = "none",
+                                      panel.background = element_blank(),
+                                      panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                      panel.grid.minor = element_line(colour = "gray85"),
+                                      axis.ticks = element_blank(),
+                                      axis.title.y = element_text(size = 9),
+                                      axis.title.x = element_blank(),
+                                      axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+#### legend plot
+s <- as_ggplot(get_legend(ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
                             geom_point() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
                             ylab("Eigenvector Centrality") + ylim(0,1) + xlab("") + labs(color = "Network Domain") +
                             theme(legend.key.size = unit(1, "cm"),
                                   legend.text = element_text(size = 15),
                                   legend.title = element_text(size = 20))
 ))
-grid.arrange(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)
+
+grid.arrange(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)
 
 ##### Boxplots #####
-### Average Degree
-a <- ggplot(master_data, aes(x = NetworkDomain, y = AverageDegree, color = NetworkDomain)) +
-  geom_boxplot() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Average Degree*") + xlab("") + theme(legend.position = "none",
-                                             panel.background = element_blank(),
-                                             panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                             panel.grid.minor = element_line(colour = "gray85"),
-                                             axis.ticks = element_blank(),
-                                             axis.title.y = element_text(size = 9),
-                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
 ### Average Path Length
-b <- ggplot(master_data, aes(x = NetworkDomain, y = AveragePathLength, color = NetworkDomain)) +
+a <- ggplot(master_data, aes(x = NetworkDomain, y = AveragePathLength, color = NetworkDomain)) +
   geom_boxplot() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Average Path Length*") + xlab("") + theme(legend.position = "none",
-                                                   panel.background = element_blank(),
-                                                   panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                   panel.grid.minor = element_line(colour = "gray85"),
-                                                   axis.ticks = element_blank(),
-                                                   axis.title.y = element_text(size = 9),
-                                                   axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Average Transitivity
-c <- ggplot(master_data, aes(x = NetworkDomain, y = AverageTransitivity, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Average Transitivity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                              panel.background = element_blank(),
-                                                              panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                              panel.grid.minor = element_line(colour = "gray85"),
-                                                              axis.ticks = element_blank(),
-                                                              axis.title.y = element_text(size = 9),
-                                                              axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Complexity
-d <- ggplot(master_data, aes(x = NetworkDomain, y = Complexity, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Complexity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                    panel.background = element_blank(),
-                                                    panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                    panel.grid.minor = element_line(colour = "gray85"),
-                                                    axis.ticks = element_blank(),
-                                                    axis.title.y = element_text(size = 9),
-                                                    axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+                                                  panel.background = element_blank(),
+                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                  panel.grid.minor = element_line(colour = "gray85"),
+                                                  axis.ticks = element_blank(),
+                                                  axis.title.y = element_text(size = 9),
+                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Degree Assortativity
-e <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeAssortativity, color = NetworkDomain)) +
+b <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeAssortativity, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Degree Assortativity") + ylim(-1,1) + xlab("") + theme(legend.position = "none",
                                                                panel.background = element_blank(),
@@ -348,20 +304,9 @@ e <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeAssortativity, color =
                                                                axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Density
-f <- ggplot(master_data, aes(x = NetworkDomain, y = Density, color = NetworkDomain)) +
+c <- ggplot(master_data, aes(x = NetworkDomain, y = Density, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Density") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                  panel.background = element_blank(),
-                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                  panel.grid.minor = element_line(colour = "gray85"),
-                                                  axis.ticks = element_blank(),
-                                                  axis.title.y = element_text(size = 9),
-                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Entropy
-g <- ggplot(master_data, aes(x = NetworkDomain, y = Entropy, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Entropy") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                  panel.background = element_blank(),
                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
                                                  panel.grid.minor = element_line(colour = "gray85"),
@@ -369,8 +314,18 @@ g <- ggplot(master_data, aes(x = NetworkDomain, y = Entropy, color = NetworkDoma
                                                  axis.title.y = element_text(size = 9),
                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
+### Average Transitivity
+d <- ggplot(master_data, aes(x = NetworkDomain, y = AverageTransitivity, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Average Transitivity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                              panel.background = element_blank(),
+                                                              panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                              panel.grid.minor = element_line(colour = "gray85"),
+                                                              axis.ticks = element_blank(),
+                                                              axis.title.y = element_text(size = 9),
+                                                              axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 ### Median Degree
-h <- ggplot(master_data, aes(x = NetworkDomain, y = MedianDegree, color = NetworkDomain)) +
+e <- ggplot(master_data, aes(x = NetworkDomain, y = MedianDegree, color = NetworkDomain)) +
   geom_boxplot() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Median Degree*") + xlab("") + theme(legend.position = "none",
                                             panel.background = element_blank(),
@@ -381,76 +336,17 @@ h <- ggplot(master_data, aes(x = NetworkDomain, y = MedianDegree, color = Networ
                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Global Transivity
-i <- ggplot(master_data, aes(x = NetworkDomain, y = GlobalTransitivity, color = NetworkDomain)) +
+f <- ggplot(master_data, aes(x = NetworkDomain, y = GlobalTransitivity, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("GlobalTransitivity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                            panel.background = element_blank(),
-                                                            panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                            panel.grid.minor = element_line(colour = "gray85"),
-                                                            axis.ticks = element_blank(),
-                                                            axis.title.y = element_text(size = 9),
-                                                            axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-#grid.arrange(a, b, c, d, e, f, g, h, i, j)
-#### Gini Coefficients
-### Gini Betweenness
-j <- ggplot(master_data, aes(x = NetworkDomain, y = GiniBetweenness, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Betweenness") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                          panel.background = element_blank(),
-                                                          panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                          panel.grid.minor = element_line(colour = "gray85"),
-                                                          axis.ticks = element_blank(),
-                                                          axis.title.y = element_text(size = 9),
-                                                          axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Closeness
-k <- ggplot(master_data, aes(x = NetworkDomain, y = GiniCloseness, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Closeness") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                        panel.background = element_blank(),
-                                                        panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                        panel.grid.minor = element_line(colour = "gray85"),
-                                                        axis.ticks = element_blank(),
-                                                        axis.title.y = element_text(size = 9),
-                                                        axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-
-### Gini Degree Count
-l <- ggplot(master_data, aes(x = NetworkDomain, y = GiniDegreeCount, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Degree Count") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                           panel.background = element_blank(),
-                                                           panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                           panel.grid.minor = element_line(colour = "gray85"),
-                                                           axis.ticks = element_blank(),
-                                                           axis.title.y = element_text(size = 9),
-                                                           axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Degree Distribution
-m <- ggplot(master_data, aes(x = NetworkDomain, y = GiniDegreeDistribution, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Degree Distribution") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                                  panel.background = element_blank(),
-                                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                                  panel.grid.minor = element_line(colour = "gray85"),
-                                                                  axis.ticks = element_blank(),
-                                                                  axis.title.y = element_text(size = 9),
-                                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
-### Gini Eigenvector Centrality
-n <- ggplot(master_data, aes(x = NetworkDomain, y = GiniEigenvectorCentrality, color = NetworkDomain)) +
-  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
-  ylab("Gini Eigenvector Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
-                                                                     panel.background = element_blank(),
-                                                                     panel.grid.major = element_line(colour = "gray85", size = 0.5),
-                                                                     panel.grid.minor = element_line(colour = "gray85"),
-                                                                     axis.ticks = element_blank(),
-                                                                     axis.title.y = element_text(size = 9),
-                                                                     axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
-
+  ylab("Global Transitivity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                             panel.background = element_blank(),
+                                                             panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                             panel.grid.minor = element_line(colour = "gray85"),
+                                                             axis.ticks = element_blank(),
+                                                             axis.title.y = element_text(size = 9),
+                                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 ### Gini Transitivity
-o <- ggplot(master_data, aes(x = NetworkDomain, y = GiniTransitivity, color = NetworkDomain)) +
+g <- ggplot(master_data, aes(x = NetworkDomain, y = GiniTransitivity, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Gini Transitivity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                            panel.background = element_blank(),
@@ -460,11 +356,19 @@ o <- ggplot(master_data, aes(x = NetworkDomain, y = GiniTransitivity, color = Ne
                                                            axis.title.y = element_text(size = 9),
                                                            axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
-#grid.arrange(k, l, m, n, o, p, q)
-#### Centrality Measures ####
+### Average Degree
+h <- ggplot(master_data, aes(x = NetworkDomain, y = AverageDegree, color = NetworkDomain)) +
+  geom_boxplot() + scale_y_log10() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Average Degree*") + xlab("") + theme(legend.position = "none",
+                                             panel.background = element_blank(),
+                                             panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                             panel.grid.minor = element_line(colour = "gray85"),
+                                             axis.ticks = element_blank(),
+                                             axis.title.y = element_text(size = 9),
+                                             axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Betweenness Centrality
-p <- ggplot(master_data, aes(x = NetworkDomain, y = BetweennessCentrality, color = NetworkDomain)) +
+i <- ggplot(master_data, aes(x = NetworkDomain, y = BetweennessCentrality, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Betweenness Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                                 panel.background = element_blank(),
@@ -475,7 +379,7 @@ p <- ggplot(master_data, aes(x = NetworkDomain, y = BetweennessCentrality, color
                                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Closeness Centrality
-q <- ggplot(master_data, aes(x = NetworkDomain, y = ClosenessCentrality, color = NetworkDomain)) +
+j <- ggplot(master_data, aes(x = NetworkDomain, y = ClosenessCentrality, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Closeness Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                               panel.background = element_blank(),
@@ -487,7 +391,7 @@ q <- ggplot(master_data, aes(x = NetworkDomain, y = ClosenessCentrality, color =
 
 
 ### Degree Centrality
-r <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeCentrality, color = NetworkDomain)) +
+k <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeCentrality, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Degree Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                            panel.background = element_blank(),
@@ -498,7 +402,7 @@ r <- ggplot(master_data, aes(x = NetworkDomain, y = DegreeCentrality, color = Ne
                                                            axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
 ### Eigenvector Centrality
-s <- ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
+l <- ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
   geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
   ylab("Eigenvector Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
                                                                 panel.background = element_blank(),
@@ -507,8 +411,74 @@ s <- ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color
                                                                 axis.ticks = element_blank(),
                                                                 axis.title.y = element_text(size = 9),
                                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+### Gini Betweenness
+m <- ggplot(master_data, aes(x = NetworkDomain, y = GiniBetweenness, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Betweenness") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                          panel.background = element_blank(),
+                                                          panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                          panel.grid.minor = element_line(colour = "gray85"),
+                                                          axis.ticks = element_blank(),
+                                                          axis.title.y = element_text(size = 9),
+                                                          axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
 
-t <- as_ggplot(get_legend(ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
+### Gini Closeness
+n <- ggplot(master_data, aes(x = NetworkDomain, y = GiniCloseness, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Closeness") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                        panel.background = element_blank(),
+                                                        panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                        panel.grid.minor = element_line(colour = "gray85"),
+                                                        axis.ticks = element_blank(),
+                                                        axis.title.y = element_text(size = 9),
+                                                        axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+
+### Gini Degree Distribution
+o <- ggplot(master_data, aes(x = NetworkDomain, y = GiniDegreeDistribution, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Degree Distribution") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                                  panel.background = element_blank(),
+                                                                  panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                                  panel.grid.minor = element_line(colour = "gray85"),
+                                                                  axis.ticks = element_blank(),
+                                                                  axis.title.y = element_text(size = 9),
+                                                                  axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Gini Eigenvector Centrality
+p <- ggplot(master_data, aes(x = NetworkDomain, y = GiniEigenvectorCentrality, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Gini Eigenvector Centrality") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                                     panel.background = element_blank(),
+                                                                     panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                                     panel.grid.minor = element_line(colour = "gray85"),
+                                                                     axis.ticks = element_blank(),
+                                                                     axis.title.y = element_text(size = 9),
+                                                                     axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Complexity
+q <- ggplot(master_data, aes(x = NetworkDomain, y = Complexity, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Complexity") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                    panel.background = element_blank(),
+                                                    panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                    panel.grid.minor = element_line(colour = "gray85"),
+                                                    axis.ticks = element_blank(),
+                                                    axis.title.y = element_text(size = 9),
+                                                    axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+
+### Entropy
+r <- ggplot(master_data, aes(x = NetworkDomain, y = Entropy, color = NetworkDomain)) +
+  geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
+  ylab("Entropy") + ylim(0,1) + xlab("") + theme(legend.position = "none",
+                                                 panel.background = element_blank(),
+                                                 panel.grid.major = element_line(colour = "gray85", size = 0.5),
+                                                 panel.grid.minor = element_line(colour = "gray85"),
+                                                 axis.ticks = element_blank(),
+                                                 axis.title.y = element_text(size = 9),
+                                                 axis.text.x = element_text(size = 6, colour = "Black", angle = 45, hjust = 1))
+### legend plot
+s <- as_ggplot(get_legend(ggplot(master_data, aes(x = NetworkDomain, y = EigenvectorCentrality, color = NetworkDomain)) +
                             geom_boxplot() + scale_color_manual(values = c("gray20", "orangered1", "dodgerblue1")) +
                             ylab("Eigenvector Centrality") + ylim(0,1) + xlab("") + labs(color = "Network Domain") +
                        theme(legend.key.size = unit(1, "cm"),
@@ -516,6 +486,6 @@ t <- as_ggplot(get_legend(ggplot(master_data, aes(x = NetworkDomain, y = Eigenve
                              legend.title = element_text(size = 20))
 ))
 
-grid.arrange(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)
+grid.arrange(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)
 
 

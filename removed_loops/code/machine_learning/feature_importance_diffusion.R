@@ -15,6 +15,8 @@ diffusion_lm <- lm(cbind(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_
 
                      AverageTransitivity + GiniTransitivity + GlobalTransitivity +
 
+                     MeanConstraint + GiniConstraint +
+
                      AverageDegree + MedianDegree +
 
                      Complexity + Entropy +

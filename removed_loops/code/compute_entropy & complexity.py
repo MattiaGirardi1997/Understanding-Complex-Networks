@@ -303,12 +303,12 @@ def watts_strogatz_network(number_of_nodes, number_neighbors,
 
 import os
 os.chdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt')
-files = os.listdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt')[0]
+files = os.listdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt')[83:490]
 import pandas as pd
 
 for filename in files:
      name = filename
-     net = Network(adjacency=load('metabolic_networks_from_kegg_(2006)_7.txt', verbose = True))
+     net = Network(adjacency=load(name, verbose = True))
      entropy = net.entropy()
      complexity = net.complexity()
      measures = {'Name': [name],

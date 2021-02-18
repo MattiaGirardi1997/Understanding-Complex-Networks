@@ -45,12 +45,11 @@ for(i in 1:nrow(master)){
 # run measures
 source("R/removed_loops_measures_function.R")
 data <- fread("removed_loops/output/removed_loops_table.csv")
-for(i in 1:nrow(data)){
+for(i in 224:nrow(data)){
   net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
   removed.loops.network.measures(net, i, path = "removed_loops/output/master_measures_removed_loops2.csv")
   rm(net)
 }
-
 
 
 

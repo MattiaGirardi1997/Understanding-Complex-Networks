@@ -14,9 +14,9 @@ highlyCorrelated <- findCorrelation(correlationMatrix, cutoff = 0.75)
 names(master_data[,4:24])[print(highlyCorrelated)]
 
 #### correlation matrix
-cor <- cor(master_data[, 4:24], use = "complete.obs")
+cor <- cor(master_data[, c(4:24, 32:33)], use = "complete.obs")
 
-corrplot(cor, method = "number", type = "upper", tl.col = "black", tl.offset = 0.4,
+corrplot(cor, method = "color", type = "upper", tl.col = "black", tl.offset = 0.4,
          cl.align.text = "l", tl.srt = 90, addgrid.col = "black")
 
 #### transform Social,Offline and Social,Online into logical variables

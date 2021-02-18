@@ -16,9 +16,9 @@ complexity_and_entropy_measures <- complexity_and_entropy_measures[order(complex
 
 complexity_and_entropy_measures <- complexity_and_entropy_measures[Name %in% measures$Name]
 
-master_measures <- data.table(measures[,1:11], Complexity = complexity_and_entropy_measures$Complexity,
-                              measures[,12:17], Entropy = complexity_and_entropy_measures$Entropy,
-                              measures[,18])
+master_measures <- data.table(measures[,1:13], Complexity = complexity_and_entropy_measures$Complexity,
+                              Entropy = complexity_and_entropy_measures$Entropy,
+                              measures[,14:21])
 
 write.table(master_measures, file = "removed_loops/output/master_measures_removed_loops.csv", sep = ",", row.names = F)
 
