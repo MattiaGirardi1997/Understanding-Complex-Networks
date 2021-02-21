@@ -57,35 +57,37 @@ for(n in 1:10){
 # load in measures data
 data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 
-for(i in 1:nrow(master)){
+for(i in 1:nrow(data)){
   name <- data[i, Name]
   el <- fread(sprintf("data/all_data/%s.csv", name)) %>%
     graph_from_data_frame(directed = F) %>%
     simplify()
   if(i == 1){
-    res <- data.table(data[i, 2:4], Connected = is.connected(el), Components = components(el)$no,
-                      Max = max(components(el)$csize))
+    res <- data.table(data[i, 2:4], Connected = is.connected(el))
   } else {
-    res <- rbind(res, data.table(data[i, 2:4], Connected = is.connected(el),
-                                 Components = components(el)$no, Max = max(components(el)$csize)))
+    res <- rbind(res, data.table(data[i, 2:4], Connected = is.connected(el)))
   }
   rm(el, name)
 }
 
 run <- res[Connected == FALSE, Name]
 run <- which(data$Name %in% run)
+run <- dplyr::combine(run, which(!master_data$Name %in% D_1_50_70$Name))
+run <- run[-c(133:147)]
+run
+
 
 # run diffusion
 source("R/rerun_removed_loops_diffusion_function.R")
 set.seed(1234)
 for(n in 1:10){
-  for(j in run){
-    rerun.removed.loops.diffusion(j = j, pct.starting.infected = 0.001, p.infection = 1, n = n,
-                                     threshold = 0.5)
+  for(j in 467:476){
+    rerun.removed.loops.diffusion(j = j, pct.starting.infected = 0.01, p.infection = 0.5, n = n,
+                                     threshold = 0.7)
   }
 }
 
-# 0.1-100-50 ...
+  # 0.1-100-50 done
 # 1-100-70
 # 1-100-50
 # 1-50-70
@@ -97,5 +99,21 @@ for(n in 1:10){
 # 10-100-50
 
 
+
+#######
+# run diffusion
+D_1_50_70 <- fread("removed_loops/diffusion/consolidated/1% starting_50% prob_70% threshold.csv")
+source("R/rerun_removed_loops_diffusion_function.R")
+master_data <- fread("removed_loops/output/master_measures_removed_loops.csv")
+
+which(!master_data$Name %in% D_1_50_70$Name)
+
+set.seed(1234)
+for(n in 1:10){
+  for(j in which(!master_data$Name %in% D_1_50_70$Name)){
+    rerun.removed.loops.diffusion(j = j, pct.starting.infected = 0.01, p.infection = 0.5, n = n,
+                                     threshold = 0.7)
+  }
+}
 
 

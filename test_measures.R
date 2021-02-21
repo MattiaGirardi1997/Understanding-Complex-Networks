@@ -6,6 +6,13 @@ data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 i <- 1
 net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
 g <- graph_from_data_frame(net, directed = F)
+Gini(degree(net))
+Gini(degree.distribution(g))
+
+
+
+plot(degree.distribution(g))
+
 
 eb <- edge.betweenness.community(g)
 
@@ -15,17 +22,18 @@ plot(eb, g)
 data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 for(i in 1:nrow(data)){
   name <- data[i, Name]
-  net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
-  net <- graph_from_data_frame(net, directed = F)
+  net <- graph_from_data_frame(fread(sprintf("removed_loops/data/%s.csv", data[i, Name])), directed = F)
+  GiniDegreeDistribution <- Gini(degree(net))
   if(i == 1){
-    res <- data.table(data[i, 1:4], Connected = is.connected(net), Components = components(net)$no)
+    res <- data.table(data[i, 1:4], GiniDegreeDistribution)
   } else {
-    res <- rbind(res, data.table(data[i, 1:4], Connected = is.connected(net),
-                                 Components = components(net)$no))
+    res <- rbind(res, data.table(data[i, 1:4], GiniDegreeDistribution))
   }
 }
 
-length(which(res$Connected))
+data$GiniDegreeDistribution <- res$GiniDegreeDistribution
+write.table(data, file = "removed_loops/output/master_measures_removed_loops.csv",
+            sep = ",", row.names = F)
 
 ### Constraint
 data <- fread("removed_loops/output/removed_loops_table.csv")

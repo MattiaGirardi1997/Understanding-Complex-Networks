@@ -1,8 +1,8 @@
 library(data.table)
 
 # calculate mean of diffusion
-files <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=TRUE)[1:10]
-names <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=FALSE)[1:10]
+files <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=TRUE)[71:80]
+names <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=FALSE)[71:80]
 files
 
 for(i in 1:length(files)){
@@ -14,6 +14,7 @@ for(i in 1:length(files)){
     res_table <- cbind(res_table, res)
     }
 }
+
 name <- names[1]
 name <- gsub("_1.csv", "", name)
 res_table <- data.table(res_table[, 1:4], sapply(res_table[, 5:ncol(res_table)], as.integer))
@@ -22,8 +23,72 @@ write.table(res_table, file = sprintf("removed_loops/diffusion/consolidated/%s.c
               sep = ",")
 names <- names[-c(1:10)]
 files <- files[-c(1:10)]
-#####
 
+##### consolidate rerun diffusion results
+files <- list.files(path = "removed_loops/diffusion/rerun", pattern="rerun_", full.names=TRUE)[11:20]
+names <- list.files(path = "removed_loops/diffusion/rerun", pattern="*rerun_", full.names=FALSE)[11:20]
+files
+
+for(i in 1:length(files)){
+  if(i == 1){
+    res_table <- fread(files[i])
+    names(res_table) <- c("Name", "NetworkDomain", "Nodes", "Edges", "Iteration_1")
+  } else {
+    res <- fread(files[i])
+    names(res) <- c("Name", "NetworkDomain", "Nodes", "Edges", "Iteration_1")
+    res <- res[, sprintf("Iteration_%s", i) := Iteration_1][, 6]
+    res_table <- cbind(res_table, res)
+  }
+}
+name <- names[1]
+name <- gsub("_1.csv", "", name)
+res_table <- data.table(res_table[, 1:4], sapply(res_table[, 5:ncol(res_table)], as.integer))
+res_table <- res_table[, Mean := rowMeans(res_table[, 5:ncol(res_table)])]
+write.table(res_table, file = sprintf("removed_loops/diffusion/consolidated/%s.csv", name), row.names = F,
+            sep = ",")
+names <- names[-c(1:10)]
+files <- files[-c(1:10)]
+
+### add resrun diffusion results
+files <- list.files(path = "removed_loops/diffusion/consolidated", pattern="*.csv", full.names=TRUE)
+names <- list.files(path = "removed_loops/diffusion/consolidated", pattern="*.csv", full.names=FALSE)
+
+rerun_files <- list.files(path = "removed_loops/diffusion/consolidated", pattern="rerun_", full.names=TRUE)
+rerun_names <- list.files(path = "removed_loops/diffusion/consolidated", pattern="*rerun_", full.names=FALSE)
+
+for(i in 1:length(files)){
+  rerun <- fread(sprintf("removed_loops/diffusion/consolidated/
+                         rerun_0.1% starting_100% prob_50% threshold.csv"))
+
+}
+
+
+# D_01_100_50
+rerun <- fread("removed_loops/diffusion/consolidated/rerun_0.1% starting_100% prob_50% threshold.csv")
+D_01_100_50 <- fread("removed_loops/diffusion/consolidated/0.1% starting_100% prob_50% threshold.csv")
+
+D_01_100_50 <- D_01_100_50[!which(D_01_100_50$Name %in% rerun$Name)]
+D_01_100_50 <- rbind(D_01_100_50, rerun)
+D_01_100_50  <- D_01_100_50[order(D_01_100_50$Name)]
+write.table(D_01_100_50, file = "removed_loops/diffusion/consolidated/0.1% starting_100% prob_50% threshold.csv", row.names = F,
+            sep = ",")
+
+# D_1_50_50
+rerun <- fread("removed_loops/diffusion/consolidated/rerun_1% starting_50% prob_70% threshold.csv")
+D_1_50_70 <- fread("removed_loops/diffusion/consolidated/1% starting_50% prob_70% threshold.csv")
+
+D_1_50_70 <- D_1_50_70[!which(D_1_50_70$Name %in% rerun$Name)]
+D_1_50_70 <- rbind(D_1_50_70, rerun)
+length(unique(D_1_50_70$Name))
+D_1_50_70  <- D_1_50_70[order(D_1_50_70$Name)]
+write.table(D_1_50_70, file = "removed_loops/diffusion/consolidated/1% starting_50% prob_50% threshold.csv",
+            row.names = F, sep = ",")
+
+
+which(!master_data$Name %in% D_1_50_70$Name)
+master_data[which(!master_data$Name %in% D_1_50_70$Name), Name]
+
+### creating diffusion results table
 # load in measure table
 master_data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 
@@ -58,8 +123,5 @@ master_data[, 4:length(master_data)] <- data.table(apply(master_data[, 4:length(
 
 write.table(master_data, file = "removed_loops/output/master_diffusion.csv", row.names = F,
             sep = ",")
-
-
-
 
 

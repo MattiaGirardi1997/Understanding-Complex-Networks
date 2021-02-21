@@ -56,7 +56,7 @@ rerun.removed.loops.diffusion <- function(j, p.infection, pct.starting.infected,
     if(nrow(el) == 0){
       write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))
                                                                   /length(infected_data$infected))),
-                  file = sprintf("removed_loops/diffusion/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                  file = sprintf("removed_loops/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                  (pct.starting.infected*100),(p.infection*100),
                                  (threshold*100), n), sep = ",", row.names = F,
                   append = T, col.names = F)
@@ -89,12 +89,12 @@ rerun.removed.loops.diffusion <- function(j, p.infection, pct.starting.infected,
       if(j == 1){
         write.table(data.table(Name = file, NetworkDomain = domain, Nodes = n.people, Edges = edges,
                                Iterations = (t + (ten.thousands*runs))),
-                    file = sprintf("removed_loops/diffusion/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("removed_loops/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F)
       } else {
         write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                    file = sprintf("removed_loops/diffusion/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("removed_loops/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F,
                     append = T, col.names = F)

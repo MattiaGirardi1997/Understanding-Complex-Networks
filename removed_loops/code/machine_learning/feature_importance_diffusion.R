@@ -15,8 +15,6 @@ diffusion_lm <- lm(cbind(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_
 
                      AverageTransitivity + GiniTransitivity + GlobalTransitivity +
 
-                     MeanConstraint + GiniConstraint +
-
                      AverageDegree + MedianDegree +
 
                      Complexity + Entropy +
@@ -26,6 +24,19 @@ diffusion_lm <- lm(cbind(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_
 
                      GiniBetweenness + GiniCloseness + GiniDegreeDistribution +
                      GiniEigenvectorCentrality,
+                   data = master_data)
+
+diffusion_lm <- lm(cbind(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
+                         D_5_50_70, D_5_100_70) ~
+                     Nodes + Edges + AveragePathLength + DegreeAssortativity + Density +
+
+                     GiniTransitivity +
+
+                     AverageDegree +
+
+                     Complexity +
+
+                     GiniCloseness + GiniDegreeDistribution,
                    data = master_data)
 
 summary(diffusion_lm)
@@ -102,7 +113,7 @@ estimate <- data.table(Measure = rownames(R1)[-1], D_01_100_50 = R1$Estimate[-1]
 
 estimate <- estimate[order(abs(estimate$D_1_50_50), decreasing = T)]
 
-estimate_table <- melt(estimate[1:10], id.vars = "Measure")
+estimate_table <- melt(estimate[2:10], id.vars = "Measure")
 
 ggplot(estimate_table, aes(x = reorder(Measure, abs(value)), y = value,
                            fill = variable)) + geom_col(position = "dodge") +
