@@ -1,7 +1,7 @@
 #########################################
-## Removed Loops Diffusion Function
+## Diffusion Function
 ## Mattia Girardi
-## 28.12.2020
+## 15.01.2021
 ########################################
 
 #' Simulate diffusion on network
@@ -13,13 +13,13 @@
 #' @return number of infection iterations for 70% of nodes infected
 #' @export
 #' @import data.table, igraph, dplyr
-rerun.removed.loops.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
-                                               fread("removed_loops/output/master_measures_removed_loops.csv")[,2:5]){
+simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
+                                 fread("output/master_measures.csv")[,2:5]){
   # load in network
   file <- as.character(master_data[j, Name])
   domain <- as.character(master_data[j, NetworkDomain])
   edges <- master_data[j, Edges]
-  el <- fread(sprintf("removed_loops/data/%s.csv", file))
+  el <- fread(sprintf("data/final_data/%s.csv", file))
 
   # get number of nodes
   nodes <- unique(c(el$Node1, el$Node2))

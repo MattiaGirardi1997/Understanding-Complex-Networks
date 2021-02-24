@@ -1,7 +1,7 @@
 #########################################
-## Diffusion Model function
+## Diffusion Function
 ## Mattia Girardi
-## 04.09.2020
+## 15.01.2021
 ########################################
 
 #' Simulate diffusion on network
@@ -14,12 +14,12 @@
 #' @export
 #' @import data.table, igraph, dplyr
 simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
-                                 fread("output/undirected/master_measures_2.csv")[,c("Name", "NetworkDomain", "Edges", "Nodes")]){
+                                 fread("output/master_measures.csv")[,2:5]){
   # load in network
   file <- as.character(master_data[j, Name])
   domain <- as.character(master_data[j, NetworkDomain])
   edges <- master_data[j, Edges]
-  el <- fread(sprintf("data/all_data/%s.csv", file))
+  el <- fread(sprintf("data/final_data/%s.csv", file))
 
   # get number of nodes
   nodes <- unique(c(el$Node1, el$Node2))
@@ -52,6 +52,16 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
   t <- 1
   while(t < (runs+2)){
 
+    # break while loop for empty edgelists
+    if(nrow(el) == 0){
+      write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))
+                                                                  /length(infected_data$infected))),
+                  file = sprintf("data/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                                 (pct.starting.infected*100),(p.infection*100),
+                                 (threshold*100), n), sep = ",", row.names = F,
+                  append = T, col.names = F)
+      break
+    }
     # select random edge
     random.edge <- sample(nrow(el), size = 1)
     el[random.edge]
@@ -74,29 +84,17 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
       )]
     }
 
-    print(length(which(infected_data$infected))/length(infected_data$infected))
-
-    # make sure loop does not run indefinitely and print limit of infections
-    if((t + (ten.thousands*runs)) > (70*n.people)){
-      write.table(data.table(file, domain, n.people, edges, paste("limit:",length(which(infected_data$infected))/length(infected_data$infected))),
-                  file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
-                                 (pct.starting.infected*100),(p.infection*100),
-                                 (threshold*100), n), sep = ",", row.names = F,
-                  append = T, col.names = F)
-      break
-    }
-
-    # save required number of iterations needed to achieve 70% of nodes infected
+   # save required number of iterations needed to achieve 70% of nodes infected
     if(length(which(infected_data$infected))/length(infected_data$infected) >= threshold){
       if(j == 1){
-        write.table(data.table(Name = file, Domain = domain, Nodes = n.people, Edges = edges,
-                               Iterations_1 = (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+        write.table(data.table(Name = file, NetworkDomain = domain, Nodes = n.people, Edges = edges,
+                               Iterations = (t + (ten.thousands*runs))),
+                    file = sprintf("output/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F)
       } else {
         write.table(data.table(file, domain, n.people, edges, (t + (ten.thousands*runs))),
-                    file = sprintf("output/diffusion/%s%% starting_%s%% prob_%s%% threshold_%s.csv",
+                    file = sprintf("output/diffusion/rerun/rerun_%s%% starting_%s%% prob_%s%% threshold_%s.csv",
                                    (pct.starting.infected*100),(p.infection*100),
                                    (threshold*100), n), sep = ",", row.names = F,
                     append = T, col.names = F)

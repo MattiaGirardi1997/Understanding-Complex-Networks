@@ -6,10 +6,10 @@ data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 i <- 1
 net <- fread(sprintf("removed_loops/data/%s.csv", data[i, Name]))
 g <- graph_from_data_frame(net, directed = F)
-Gini(degree(net))
+Gini(degree(g))
 Gini(degree.distribution(g))
-
-
+plot(master_data[NetworkDomain == "Social"]$GiniDegreeDistribution)
+plot(master_data[NetworkDomain == "Non-Social"]$GiniDegreeDistribution)
 
 plot(degree.distribution(g))
 
@@ -23,7 +23,7 @@ data <- fread("removed_loops/output/master_measures_removed_loops.csv")
 for(i in 1:nrow(data)){
   name <- data[i, Name]
   net <- graph_from_data_frame(fread(sprintf("removed_loops/data/%s.csv", data[i, Name])), directed = F)
-  GiniDegreeDistribution <- Gini(degree(net))
+  GiniDegreeDistribution <- Gini(degree_distribution(net))
   if(i == 1){
     res <- data.table(data[i, 1:4], GiniDegreeDistribution)
   } else {
@@ -32,6 +32,7 @@ for(i in 1:nrow(data)){
 }
 
 data$GiniDegreeDistribution <- res$GiniDegreeDistribution
+data <- master_data[-(103:111)]
 write.table(data, file = "removed_loops/output/master_measures_removed_loops.csv",
             sep = ",", row.names = F)
 

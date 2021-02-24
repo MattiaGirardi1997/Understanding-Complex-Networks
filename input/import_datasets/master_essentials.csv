@@ -1,4 +1,4 @@
-"network_name","index","networkDomain","directed","number_edges"
+"Name","Index","NetworkDomain","Directed","Edges"
 "7th_graders","7th_gr","Social,Offline",TRUE,740
 "academia_edu","academ","Social,Online",TRUE,1398063
 "add_health_comm1","add_he","Social,Offline",TRUE,305
