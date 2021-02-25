@@ -9,13 +9,27 @@ setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
 
 #install packages
 list.of.packages <- c("data.table", "igraph", "jsonlite", "ggplot2", "gridExtra", "mlbench",
-                      "caret", "e1071", "corrplot")
+                      "caret", "e1071", "corrplot", "googledrive", "purrr")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
 
 #### 1) Imported data in R scripts from "input/code/import_netzschleuder_data.R" and
 #       "input/code/import_OLP_data.R"; saved in "data/all_data"
+## store the URL you have
+folder_url <- "https://drive.google.com/drive/folders/1jgQZXQu8CCk36-dF_eCT9MciUGy1v0Kn?usp=sharing"
+
+## identify this folder on Drive
+## let googledrive know this is a file ID or URL, as opposed to file name
+folder <- drive_get(as_id(folder_url))
+
+## identify the csv files in that folder
+csv_files <- drive_ls(folder, type = "csv")
+csv_files <- csv_files[order(csv_files$name)]
+
+## download them
+setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis/data/new")
+walk(csv_files$id, ~ drive_download(as_id(.x)));setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
 
 #### 2) Removed loops, simplified networks in script "data/code/removed_loops.R";
 #       results were saved to "data/final_data"; the network specifications were saved in
