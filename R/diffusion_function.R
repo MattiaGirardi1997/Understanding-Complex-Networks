@@ -13,11 +13,11 @@
 #' @return number of infection iterations for 70% of nodes infected
 #' @export
 #' @import data.table, igraph, dplyr
-simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
+simulate.diffusion <- function(i, p.infection, pct.starting.infected, n, threshold, runs = 10000, master_data =
                                  fread("output/master_measures.csv")[,2:5]){
   # load in network
-  file <- as.character(master_data[j, Name])
-  domain <- as.character(master_data[j, NetworkDomain])
+  file <- as.character(master_data[i, Name])
+  domain <- as.character(master_data[i, NetworkDomain])
   edges <- master_data[j, Edges]
   el <- fread(sprintf("data/final_data/%s.csv", file))
 
@@ -62,6 +62,7 @@ simulate.diffusion <- function(j, p.infection, pct.starting.infected, n, thresho
                   append = T, col.names = F)
       break
     }
+
     # select random edge
     random.edge <- sample(nrow(el), size = 1)
     el[random.edge]

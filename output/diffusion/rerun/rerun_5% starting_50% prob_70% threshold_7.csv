@@ -131,3 +131,7 @@
 "webkb_webkb_wisconsin_link1","Informational",280,553,1472
 "wiki_science","Informational",677,6517,3181
 "word_adjacency_darwin","Informational",7377,44205,37287
+"word_adjacency_french","Informational",8308,23832,31849
+"word_adjacency_japanese","Informational",2698,7995,10297
+"word_adjacency_spanish","Informational",11558,43050,50426
+"yeast_transcription","Biological",664,1065,2514

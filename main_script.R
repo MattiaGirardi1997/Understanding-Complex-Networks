@@ -1,56 +1,286 @@
-##########################################
-## Main Script
+##############################################
 ## Mattia Girardi
+## Bachelor Thesis
 ## 24.02.2020
-#########################################
+##############################################
+## Main Script
+## Understanding Complex Social Networks: The
+## impact of social features on diffusion
+##############################################
+## Supervision:
+## Dr. Radu Tanase
+## Prof. Dr. René Algesheimer
+## Chair for Marketing and Market Research
+## University of Zurich (UZH)
+##
+
+#### Description
+# This R script holds the code for our thesis "Understanding Complex Social Networks: The
+# impact of social features on diffusion".
+#
+# We provide the functions used to compute the
+# plots in our thesis.
+#
+# In chapter 9, we introduce our proposed SI diffusion model. The para-
+# meters are adjustable to allow further simulations.
+#
+# The network data was stored on Google drive and was assembled from network repositories.
+# Repository referecnes are at the end of the script
+#
+# The script will begin by creating a folder to set up a working environment. The path and name
+# of this folder can be adjusted here...
+dir.create("~/Desktop/understanding_complex_networks")
 
 # set working directory
-setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
+setwd("~/Desktop/understanding_complex_networks")
 
-#install packages
+# install packages
 list.of.packages <- c("data.table", "igraph", "jsonlite", "ggplot2", "gridExtra", "mlbench",
                       "caret", "e1071", "corrplot", "googledrive", "purrr")
 install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])])
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
 
-#### 1) Imported data in R scripts from "input/code/import_netzschleuder_data.R" and
-#       "input/code/import_OLP_data.R"; saved in "data/all_data"
-## store the URL you have
-folder_url <- "https://drive.google.com/drive/folders/1jgQZXQu8CCk36-dF_eCT9MciUGy1v0Kn?usp=sharing"
+# create folders
+dir.create("data")
+dir.create("R")
+dir.create("output")
+dir.create("input")
 
-## identify this folder on Drive
-## let googledrive know this is a file ID or URL, as opposed to file name
-folder <- drive_get(as_id(folder_url))
+#### 1) Import data fom Google drive ####
+### import network data
+  # create folder and set directory
+  dir.create("data/raw_data")
+  setwd("~/Desktop/understanding_complex_networks/data/raw_data")
 
-## identify the csv files in that folder
-csv_files <- drive_ls(folder, type = "csv")
-csv_files <- csv_files[order(csv_files$name)]
+  # save folder url
+  folder_url <- "https://drive.google.com/drive/folders/1SE5yGMXkfwlkgSlXTDVAVrtHdGzKP8cU?usp=sharing"
 
-## download them
-setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis/data/new")
-walk(csv_files$id, ~ drive_download(as_id(.x)));setwd("~/Desktop/Bachelor Thesis/code/bachelor_thesis")
+  ## identify this folder on Drive
+  ## let googledrive know this is a file ID or URL, as opposed to file name
+  folder <- drive_get(as_id(folder_url))
 
-#### 2) Removed loops, simplified networks in script "data/code/removed_loops.R";
-#       results were saved to "data/final_data"; the network specifications were saved in
-#      "output/network_specs.csv"
+  ## identify the csv files in that folder
+  csv_files <- drive_ls(folder, type = "csv")
 
-#### 3) Computed measures in script "data/code/removed_loops.R" and saved them in
-#      "output/master_measures.csv"
+  ## download them
+  walk(csv_files$id, ~ drive_download(as_id(.x)));setwd("~/Desktop/understanding_complex_networks")
 
-#### 4) Ran diffusion simulation in "output/code/run_diffusion.R" and saved results in "output/diffusion"
+  ### import R functions
+  # set directory
+  setwd("~/Desktop/understanding_complex_networks/R")
 
-#### 5) Consolidated diffusion results in "output/code/epidemic_model/consolidated_diffusion.R" and saved as
-#       "output/master_diffusion.csv"
+  # save folder url
+  folder_url <- "https://drive.google.com/drive/folders/1XonG4zQDdoIXYevZzc-f-HFKANOuRyhS?usp=sharing"
 
-#### 6) create descriptives with "output/code/descriptives.R"
+  ## identify this folder on Drive
+  ## let googledrive know this is a file ID or URL, as opposed to file name
+  folder <- drive_get(as_id(folder_url))
 
-#### 7) create measure corrplot and identify highly correlated indices ####
+  ## identify the R scripts in that folder
+  R_files <- drive_ls(folder, type = ".R")
+
+#### 2) Modify networks (remove loops, simplify, decompose to largest component) ####
+# load function
+source("R/modify_networks.R")
+
+# create files list
+files <- list.files("data/raw", pattern = "*.csv", full.names = F)
+
+# create target folder
+dir.create("data/final_data")
+
+# apply function
+modify.networks(files, path = "data/raw", targetfolder = "data/final_data")
+
+# create updated network specs
+# load function
+source("R/create_network_specs.R")
+
+# load input
+files <- list.files("data/final_data", pattern = "*.csv", full.names = F)
+data <- fread("data/all_data/network_specs.csv")
+
+# apply function
+network.specs(files = files, data = data)
+#### 3) Compute measures ####
+# load function
+source("R/measure_function.R")
+
+# load network specs
+data <- fread("input/network_specs.csv")
+
+# run measures
+for(i in 1:nrow(data)){
+  # download network
+  net <- fread(sprintf("data/final_data/%s.csv", data[i, Name]))
+
+  # compute and save measures
+  network.measures(net, i, path = "output/master_measures.csv")
+
+  # clear environment
+  rm(net)
+}
+
+## compute entropy and complexity meaures in python with script
+  # convert .csv files to .txt to compute in python
+  # create folder
+  dir.create("data/final_data_txt")
+
+  # load measures table
+  master <- fread("output/master_measures.csv")
+
+    for(i in 1:nrow(master)){
+      # save network name
+      name <- master[i, Name]
+
+      # download network edgelist
+      net <- fread(sprintf("data/final_data/%s.csv", name))
+
+      # save .txt file
+      write.table(net, file = sprintf("data/final_data_txt/%s.txt", name), row.names = F, sep = " ", col.names = F)
+    }
+
+  # compute measures in python with script:
+  drive_download("https://drive.google.com/file/d/1nsshHIhlJCLbznq8GeIU6y-PFj1QYOYl/view?usp=sharing",
+               path = "R/complexity_and_entropy_function.py")
+
+      # ... and add to master_measures.csv
+        master <- fread("output/master_measures.csv")
+
+        # read in measures
+        complexity_and_entropy_measures <- fread("output/complexity_and_entropy_measures.csv")[, -1]
+
+        # remove suffix
+        complexity_and_entropy_measures$Name <- gsub(".txt", "", complexity_and_entropy_measures$Name)
+
+        # order by name
+        complexity_and_entropy_measures <- complexity_and_entropy_measures[order(complexity_and_entropy_measures$Name)]
+
+        # check that data names are identical
+        complexity_and_entropy_measures <- complexity_and_entropy_measures[Name %in% measures$Name]
+
+
+        # include complexity and entropy in master_measures.csv
+        master_measures <- data.table(measures[,1:13], Complexity = complexity_and_entropy_measures$Complexity,
+                                      Entropy = complexity_and_entropy_measures$Entropy,
+                                      measures[,14:21])
+
+        # update master_measures.csv
+        write.table(master_measures, file = "output/master_measures.csv", sep = ",", row.names = F)
+
+#### 4) Run diffusion simulation ####
+# create folder
+dir.create("output/diffusion")
+
+# load function
+source("R/diffusion_function.R")
+
+# load data
+master <- fread("output/master_measures.csv")
+
+# set seed for repeatability
+set.seed(1234)
+
+# run diffusion
+  # set percentage of population starting infected
+  pct.starting.infected <- NA
+
+  # set probability of infection
+  p.infection <- NA
+
+  # set threshold
+  threshold <- NA
+
+  # set number simulations per specification
+  run <- NA
+
+  # run diffusion
+  for(n in 1:run){
+    for(i in 1:nrow(master)){
+      simulate.diffusion(i = i, pct.starting.infected = pct.starting.infected,
+                         p.infection = p.infection,
+                         threshold = threshold,
+                         n = n)
+    }
+  }
+
+#### 5) Consolidate diffusion results ####
+# create folder
+dir.create("output/diffusion/consolidated")
+
+# load diffusion files
+files <- list.files(path = "output/diffusion", pattern="*.csv", full.names=TRUE)
+  # detect number of simulations per specification
+  runs <- length(grep(unlist(lapply(files, function(x) gsub("d_.*", "", x)))[1],
+                      files))
+
+# save result name
+names <- list.files(path = "output/diffusion", pattern="*.csv", full.names=FALSE)
+
+# load function
+source("R/consolidate_results.R")
+
+# apply function
+consolidate.results(files, runs, targetfolder = "output/diffusion/consolidated")
+
+### create master_diffusion for further analysis
+# load measures
+master <- fread("output/master_measures.csv")
+
+# load consolidated files
+files <- list.files("output/diffusion/consolidated", pattern = "*.csv", full.names = T)
+
+for(i in 1:length(files)){
+  # save spec name
+  spec <- paste("D", sub(".*/(.+)% s.*", "\\1", files[i]),
+                sub(".*_(.+)% p.*", "\\1", files[i]),
+                sub(".*_(.+)% t.*", "\\1", files[i]), sep = "_")
+
+  # read file
+  result <- fread(files[i])
+
+  # assign file to spec name
+  assign(spec, result)
+
+  #
+  master[, sprintf("%s", spec)] <- result$Mean
+}
+
+# save table
+write.table(master, file = "output/master_diffusion.csv", sep = ",", row.names = F)
+
+#### 6) Create index descriptives ####
+# load master measures
+master <- fread("output/master_measures.csv")
+
+# transform Social,Offline and Social,Online into logical variables
+for(i in 1:nrow(master)){
+  if(master[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
+    master[i, "NetworkDomain"] <- gsub(".*", "Social", master[i, "NetworkDomain"])
+    } else {
+      master[i, "NetworkDomain"] <- gsub(".*", "Non-Social", master[i, "NetworkDomain"])
+    }
+  }
+
+# load function
+source("R/descriptives_function.R")
+
+# plot nodes and edges
+plot.nodes.and.edges(measures = master)
+
+# scatterplots
+index.scatterplots(measures = master)
+
+# boxplots
+index.boxplots(measures = master)
+
+#### 7) Create index corrplot and identify highly correlated indices ####
 #### correlation matrix
-master_data <- fread("output/master_measures.csv")
+master <- fread("output/master_measures.csv")
 
 ### create corrplot
-cor <- cor(master_data[, 4:ncol(master_data)], use = "complete.obs")
+cor <- cor(master[, 4:ncol(master)], use = "complete.obs")
 
 corrplot(cor, method = "color", tl.col = "black", tl.offset = 0.5,
          cl.align.text = "l", addgrid.col = "black", tl.cex = 0.9)
@@ -59,398 +289,171 @@ corrplot(cor, method = "color", tl.col = "black", tl.offset = 0.5,
 # ensure the results are repeatable
 set.seed(1234)
 # calculate correlation matrix
-correlationMatrix <- cor(master_data[,4:ncol(master_data)])
+correlationMatrix <- cor(master[,4:ncol(master)])
 # summarize the correlation matrix
 print(correlationMatrix)
 # find attributes that are highly corrected (ideally >0.75)
 highlyCorrelated <- findCorrelation(correlationMatrix, cutoff = 0.75)
 # print indexes of highly correlated attributes
-names(master_data[,4:ncol(master_data)])[print(highlyCorrelated)]
-
-
-
+names(master[,4:ncol(master)])[print(highlyCorrelated)]
 
 #### 8) Machine Learning ####
 # 8.1) Classification ####
 #### load in master
-master_data <- fread("output/master_measures.csv")
+master <- fread("output/master_measures.csv")
 
 #### transform Social,Offline and Social,Online into factor variables with 2 levels
-for(i in 1:nrow(master_data)){
-  if(master_data[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
-    master_data[i, "NetworkDomain"] <- gsub(".*", "1", master_data[i, "NetworkDomain"])
+for(i in 1:nrow(master)){
+  if(master[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
+    master[i, "NetworkDomain"] <- gsub(".*", "1", master[i, "NetworkDomain"])
   } else {
-    master_data[i, "NetworkDomain"] <- gsub(".*", "0", master_data[i, "NetworkDomain"])
+    master[i, "NetworkDomain"] <- gsub(".*", "0", master[i, "NetworkDomain"])
   }
 }
 
-master_data$NetworkDomain <- as.factor(master_data$NetworkDomain)
+master$NetworkDomain <- as.factor(master$NetworkDomain)
 
-# standardization
-master_data[, 4:length(master_data)] <- data.table(apply(master_data[, 4:length(master_data)],
-                                                         2, scale))
+# load function
+source("R/classify_networks.R")
 
-# parting data into 95% trainig data and 5% test data
-index <- createDataPartition(master_data$NetworkDomain, times = 10000, p=0.95, list=FALSE)
-
-# training classifier and predicting test data
+# set seed for repeatability
 set.seed(1234)
 
-accuracy <- c()
-for(i in 1:ncol(index)){
-  master_training <- master_data[index[, i],]
-  master_test <- master_data[-index[, i],]
-  default_glm_mod <- train(
-    form = NetworkDomain ~
-      Nodes + AveragePathLength + DegreeAssortativity +
+# parting data into 95% trainig data and 5% test data; repeat 10'000 times
+partitions <- createDataPartition(master$NetworkDomain, times = 10000, p=0.95, list=FALSE)
 
-      AverageDegree +
+# classification
+classify.networks(master, partitions, fit =
 
-      GiniTransitivity +
+                    NetworkDomain ~
 
-      GiniCloseness + GiniDegreeDistribution + GiniBetweenness,
-    data = master_training,
-    method = "glm",
-    family = "binomial"
-  )
-  prediction <- predict(default_glm_mod, newdata = master_test)
-  result <- table(master_test$NetworkDomain, prediction)
-  accuracy[length(accuracy) + 1] <- (result[1]+result[4])/(nrow(master_test))
-}
+                    Nodes + AveragePathLength + DegreeAssortativity +
 
-### Results
-sd(accuracy)
-mean(accuracy)
+                    AverageDegree +
 
-# SD : [1] 0.05098981
-# mean : [1] 0.7659468
+                    GiniTransitivity +
 
-
-
-
-
+                    GiniCloseness + GiniDegreeDistribution + GiniBetweenness)
 
 # 8.2) Feature importance; logistic regression ####
-master_data <- fread("output/master_measures.csv")
+# load measures
+master <- fread("output/master_measures.csv")
 
 #### transform Social,Offline and Social,Online into factor variables with 2 levels
-for(i in 1:nrow(master_data)){
-  if(master_data[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
-    master_data[i, "NetworkDomain"] <- gsub(".*", "1", master_data[i, "NetworkDomain"])
+for(i in 1:nrow(master)){
+  if(master[i, NetworkDomain] %in% c("Social,Offline", "Social,Online")){
+    master[i, "NetworkDomain"] <- gsub(".*", "1", master[i, "NetworkDomain"])
   } else {
-    master_data[i, "NetworkDomain"] <- gsub(".*", "0", master_data[i, "NetworkDomain"])
+    master[i, "NetworkDomain"] <- gsub(".*", "0", master[i, "NetworkDomain"])
   }
 }
 
-master_data$NetworkDomain <- as.factor(master_data$NetworkDomain)
+master$NetworkDomain <- as.factor(master$NetworkDomain)
 
 # standardization
-master_data[, 4:length(master_data)] <- data.table(apply(master_data[, 4:length(master_data)],
+master[, 4:length(master)] <- data.table(apply(master[, 4:length(master)],
                                                          2, scale))
-logit_glm <- glm(NetworkDomain ~
-                     Nodes + AveragePathLength + DegreeAssortativity +
 
-                     AverageDegree +
+# load function
+source("R/feature_importance_logit.R")
+feature.importance.logit(master, fit =
 
-                     GiniTransitivity +
+                           NetworkDomain ~
 
-                     GiniCloseness + GiniDegreeDistribution + GiniBetweenness,
+                           Nodes + AveragePathLength + DegreeAssortativity +
 
-                   family = binomial, data = master_data
-)
-summary(logit_glm)
+                           AverageDegree +
 
-## subset coefficients of logistic regression
-coeff <- data.frame(summary(logit_glm)$coefficients)
-table <- data.table(Variable = rownames(coeff), coeff)[-1]
-table <- table[order(abs(table$Estimate), decreasing = T)]
-table
-ggplot(table, aes(x = reorder(Variable, abs(Estimate)), y = Estimate)) + geom_col() + coord_flip()
+                           GiniTransitivity +
 
-## plot standardized coffficients
-res <- table
-names(res)[2] <- "Standardized Coeffiecient"
-res <- res[order(-abs(res$'Standardized Coeffiecient'))]
-res$'Odds Ratio' <- sapply(table$Estimate, exp)
-res$Variable <- c("Gini Betweenness***", "Average Path Length *", "Gini Degree Distrbution*",
-                  "Gini Closeness***", "Gini Transitivity*", "Degree Assortativity",
-                  "Nodes", "Average Degree")
-res$Variable <- factor(res$Variable, levels = rev(c("Gini Betweenness***", "Average Path Length *", "Gini Degree Distrbution*",
-                                                    "Gini Closeness***", "Gini Transitivity*", "Degree Assortativity",
-                                                    "Nodes", "Average Degree")))
-
-res <- melt(res[, c(1, 2, 6)], id.vars = "Variable")
-ggplot(res, aes(x = Variable, y = value, fill = variable)) +
-  geom_col(width=0.7, position = "dodge") + coord_flip() +
-  scale_fill_manual(values = c("seagreen2", "dodgerblue2")) +
-  scale_y_continuous(limits=c(-2,2.5), breaks=c(-2, -1, 0, 1, 2)) +
-  theme(legend.title = element_blank(),
-        axis.title = element_blank(),
-        axis.text.x.bottom = element_text(size = 12),
-        axis.text.y.left = element_text(size = 12),
-        panel.background = element_blank(),
-        panel.grid.major = element_line(colour = "gray85",
-                                        size = 0.5),
-        panel.grid.minor = element_line(colour = "gray85",
-                                        size = 0.5),
-        axis.ticks = element_blank(),
-        legend.position = c(0.85, 0.25),
-        legend.background = element_rect(size = 0.1, colour = "Black"),
-        legend.key = element_blank(),
-        legend.key.height = unit(1, "cm"),
-        legend.key.width = unit(1, "cm"),
-        legend.text = element_text(color = "gray20", size = 12)) +
-  geom_hline(yintercept = 1, color = "dodgerblue3", size=1, linetype = "dotted")+
-  geom_hline(yintercept = 0, color = "gray20", size=0.5)
-
-
+                           GiniCloseness + GiniDegreeDistribution + GiniBetweenness)
 
 
 #### 9) Epidemic Model ####
+
 # 9.1) Diffusion descriptives ####
-# load diffusion results
-D_01_100_50 <- fread("output/diffusion/consolidated/0.1% starting_100% prob_50% threshold.csv")
-D_1_50_50 <- fread("output/diffusion/consolidated/1% starting_50% prob_50% threshold.csv")
-D_1_100_50 <- fread("output/diffusion/consolidated/1% starting_100% prob_50% threshold.csv")
-D_1_50_70 <- fread("output/diffusion/consolidated/1% starting_50% prob_70% threshold.csv")
-D_1_100_70 <- fread("output/diffusion/consolidated/1% starting_100% prob_70% threshold.csv")
-D_5_50_70 <- fread("output/diffusion/consolidated/5% starting_50% prob_70% threshold.csv")
-D_5_100_70 <- fread("output/diffusion/consolidated/5% starting_100% prob_70% threshold.csv")
+# load function
+source("R/diffusion_results_function.R")
 
-#### creating diffusion plot
-files <- lapply(list(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
-                     D_5_50_70, D_5_100_70), split_domains)
+# load consolidated files
+files <- list.files("output/diffusion/consolidated", pattern = "*.csv", full.names = T)
 
-specs <- c("0.1% starting, 100% probabillity of transmission, 50% threshold",
-           "1% starting, 50% probabillity of transmission, 50% threshold",
-           "1% starting, 100% probabillity of transmission, 50% threshold",
-           "1% starting, 50% probabillity of transmission, 70% threshold",
-           "1% starting, 100% probabillity of transmission, 70% threshold",
-           "5% starting, 50% probabillity of transmission, 70% threshold",
-           "5% starting, 100% probabillity of transmission, 70% threshold")
-
-for(i in 1:length(specs)){
-  files[[i]]$Domain <- factor(files[[i]][, NetworkDomain], levels=c("Social", "Non-Social"))
-  var <- paste(letters[i])
-  assign(var, ggplot(files[[i]], aes(x = Edges, y = Mean)) +
-           geom_point(aes(color = NetworkDomain)) +
-           scale_x_log10(breaks = c(100, 1000, 10000)) +
-           scale_y_log10(labels = function(x) format(x, scientific = FALSE)) + ylab("Number of Iterations") +
-           scale_color_manual(values = c("gray20", "orangered1")) + labs(title = sprintf("%s", specs[i])) +
-           facet_wrap(Domain ~ ., scales = "free_x",nrow = 2) + theme(panel.background = element_blank(),
-                                                                      panel.grid.major = element_line(colour = "gray85", size = 1),
-                                                                      panel.grid.minor = element_line(colour = "gray85"),
-                                                                      axis.ticks = element_blank(),
-                                                                      axis.title.y = element_text(size = 20),
-                                                                      axis.title.x = element_text(size = 25),
-                                                                      axis.text.x = element_text(size = 20, colour = "Black", angle = 45, hjust = 1),
-                                                                      axis.text.y = element_text(size = 20, colour = "Black", angle = 45, hjust = 1),
-                                                                      legend.position = "none",
-                                                                      plot.title = element_text(size = 20, hjust = 0.5, face = "bold", vjust = 5),
-                                                                      strip.background = element_rect(
-                                                                        fill="white"),
-                                                                      strip.text = element_text(size = 20, face = "bold"),
-                                                                      axis.line = element_line(),
-                                                                      axis.title.x.bottom = element_blank(),
-                                                                      plot.margin=unit(c(2,2,2,2),"cm")
-           )
-  )
-  if(i == length(specs)){
-    grid.arrange(a, b, c, d, e, f, g)
-  }
-}
-
-
-
-
-
+# apply function
+plot.diffusion.results(files)
 
 # 9.2) Spread of diffusion results ####
-# load diffusion results
-D_01_100_50 <- fread("output/diffusion/consolidated/0.1% starting_100% prob_50% threshold.csv")
-D_1_50_50 <- fread("output/diffusion/consolidated/1% starting_50% prob_50% threshold.csv")
-D_1_100_50 <- fread("output/diffusion/consolidated/1% starting_100% prob_50% threshold.csv")
-D_1_50_70 <- fread("output/diffusion/consolidated/1% starting_50% prob_70% threshold.csv")
-D_1_100_70 <- fread("output/diffusion/consolidated/1% starting_100% prob_70% threshold.csv")
-D_5_50_70 <- fread("output/diffusion/consolidated/5% starting_50% prob_70% threshold.csv")
-D_5_100_70 <- fread("output/diffusion/consolidated/5% starting_100% prob_70% threshold.csv")
+# load function
+source("R/diffusion_results_function.R")
 
-## creating spread plot
-files <- lapply(list(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
-                     D_5_50_70, D_5_100_70), split_domains)
+# load consolidated files
+files <- list.files("output/diffusion/consolidated", pattern = "*.csv", full.names = T)
 
-# calculate spread for each specification
-files[[1]][, "Rate"] <- (apply(files[[1]][,5:14], 1, max) - apply(files[[1]][,5:14], 1, min))/
-  files[[1]][, 3]
-files[[2]][,"Rate"] <- (apply(files[[2]][,5:14], 1, max) - apply(files[[2]][,5:14], 1, min))/
-  files[[2]][, 3]
-files[[3]][,"Rate"] <- (apply(files[[3]][,5:14], 1, max) - apply(files[[3]][,5:14], 1, min))/
-  files[[3]][, 3]
-files[[4]][,"Rate"] <- (apply(files[[4]][,5:14], 1, max) - apply(files[[4]][,5:14], 1, min))/
-  files[[4]][, 3]
-files[[5]][,"Rate"] <- (apply(files[[5]][,5:14], 1, max) - apply(files[[5]][,5:14], 1, min))/
-  files[[5]][, 3]
-files[[6]][,"Rate"] <- (apply(files[[6]][,5:14], 1, max) - apply(files[[6]][,5:14], 1, min))/
-  files[[6]][, 3]
-files[[7]][, "Rate"] <- (apply(files[[7]][,5:14], 1, max) - apply(files[[7]][,5:14], 1, min))/
-  files[[7]][, 3]
+# apply function
+plot.diffusion.spread(files)
 
-specs <- c("0.1% starting, 100% probabillity of transmission, 50% threshold",
-           "1% starting, 50% probabillity of transmission, 50% threshold",
-           "1% starting, 100% probabillity of transmission, 50% threshold",
-           "1% starting, 50% probabillity of transmission, 70% threshold",
-           "1% starting, 100% probabillity of transmission, 70% threshold",
-           "5% starting, 50% probabillity of transmission, 70% threshold",
-           "5% starting, 100% probabillity of transmission, 70% threshold")
-
-
-
-for(i in 1:length(specs)){
-  files[[i]]$Domain <- factor(files[[i]][, NetworkDomain], levels=c("Non-Social", "Social"))
-  var <- paste(letters[i])
-  assign(var, ggplot(files[[i]], aes(x = Nodes, y = Rate, color = NetworkDomain)) + geom_point() +
-           scale_x_log10() + facet_wrap(NetworkDomain~.) + scale_y_continuous(limits = c(0, 50)) +
-           scale_color_manual(values = c("gray20", "orangered1")) + ylab("Relative spread") +
-           labs(title = sprintf("%s", specs[i])) +
-           theme(panel.background = element_blank(),
-                 panel.grid.major = element_line(colour = "gray85", size = 1),
-                 panel.grid.minor = element_line(colour = "gray85"),
-                 axis.ticks = element_blank(),
-                 axis.title.y = element_text(size = 25, face = "plain"),
-                 axis.title.x = element_text(size = 25, face = "plain"),
-                 axis.text.x = element_text(size = 20, colour = "Black", angle = 45, hjust = 1),
-                 axis.text.y = element_text(size = 20, colour = "Black", angle = 45, hjust = 1),
-                 legend.position = "none",
-                 plot.title = element_text(size = 20, hjust = 0.5, vjust = 5),
-                 strip.background = element_rect(
-                   fill="white"),
-                 strip.text = element_text(size = 20),
-                 axis.line = element_line(),
-                 axis.title.x.bottom = element_blank(),
-                 plot.margin=unit(c(2,2,2,2),"cm"))
-  )
-  if(i == length(specs)){
-    grid.arrange(a, b, c, d, e, f, g, nrow = 3, ncol = 3)
-  }
-}
 # 9.3) Feature importance; diffusion regression ####
+# load function
+source("R/diffusion_results_function.R")
+
+# load consolidated files
+files <- list.files("output/diffusion/consolidated", pattern = "*.csv", full.names = T)
+
 # load in measures data
 master_diffusion <- fread("output/master_diffusion.csv")
 
 # standardization
-master_diffusion[, 4:length(master_data)] <- data.table(apply(master_diffusion[, 4:length(master_data)],
+master_diffusion[, 4:length(master_diffusion)] <- data.table(apply(master_diffusion[, 4:length(master_diffusion)],
                                                          2, scale))
 
-# diffusion regression
-diffusion_lm <- lm(cbind(D_01_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
-                         D_5_50_70, D_5_100_70) ~
-                     Nodes + AveragePathLength + DegreeAssortativity +
+# compute feature importance
+feature.importance.diffusion(master_diffusion, files, fit =
+                               cbind(D_0.1_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
+                                     D_5_50_70, D_5_100_70) ~
+                               Nodes + AveragePathLength + DegreeAssortativity +
 
-                     AverageDegree +
+                               AverageDegree +
 
-                     GiniTransitivity +
+                               GiniTransitivity +
 
-                     GiniCloseness + GiniDegreeDistribution + GiniBetweenness,
-                   data = master_diffusion)
-summary(diffusion_lm)
+                               GiniCloseness + GiniDegreeDistribution + GiniBetweenness)
 
-# calculate mean of R-squared
-r <- c()
-for(i in 1:length(summary(diffusion_lm))){
-  r[length(r) + 1] <- summary(diffusion_lm)[[i]]$r.squared
-  if(i == length(summary(diffusion_lm))){
-    print(mean(r))
-  }
-}
+# create feature rank corrplot
+feature.rank.corrplot(master_diffusion,  fit =
+                        cbind(D_0.1_100_50, D_1_50_50, D_1_100_50, D_1_50_70, D_1_100_70,
+                              D_5_50_70, D_5_100_70) ~
+                        Nodes + AveragePathLength + DegreeAssortativity +
 
-### plotting standardized coefficients
-response <- summary(diffusion_lm)
-for(i in 1:length(response)){
-  var <- paste("R", i, sep = "")
-  res <- data.frame(response[[i]]$coefficients)
-  assign(var, res)
-}
+                        AverageDegree +
 
-estimate <- data.table(Measure = rownames(R1)[-1], D_01_100_50 = R1$Estimate[-1],
-                       D_1_50_50 = R2$Estimate[-1], D_1_100_50 = R3$Estimate[-1],
-                       D_1_50_70 = R4$Estimate[-1], D_1_100_70 = R5$Estimate[-1],
-                       D_5_50_70 = R6$Estimate[-1], D_5_100_70 = R7$Estimate[-1])
+                        GiniTransitivity +
 
-estimate$Measure <- c("Nodes", "Average Path Length", "Degree Assortativity", "Average Degree",
-                      "Gini Transitivity", "Gini Closeness",
-                      "Gini Degree Distribution", "Gini Betweenness")
+                        GiniCloseness + GiniDegreeDistribution + GiniBetweenness)
 
 
-estimate <- estimate[order(abs(estimate$D_1_50_50), decreasing = T)]
+#########################################################
+##### References
+#
+# Stacking Models for Nearly Optimal Link Prediction in Complex Networks
+# Amir Ghasemian and Homa Hosseinmardi and Aram Galstyan and Edoardo M. Airoldi and Aaron Clauset
+# 2020
+# https://github.com/Aghasemian/OptimalLinkPrediction
 
-estimate_table <- melt(estimate, id.vars = "Measure")
+# Netzschleuder: network catalogue, repository and centrifuge
+# Tiago de Paula Peixoto
+# 2020
+# https://git.skewed.de/count0/netzschleuder
+#
+# The Colorado Index of Complex Networks
+# Aaron Clauset and Ellen Tucker and Matthias Sainz
+# 2016
+# https://icon.colorado.edu/
+#
+# SNAP Datasets: Stanford Large Network Dataset Collection
+# Jure Leskovec and Andrej Krevl
+# 2014
+# http://snap.stanford.edu/data
 
-ggplot(estimate_table, aes(x = reorder(Measure, abs(value)), y = value,
-                           fill = variable)) + geom_col(position = "dodge") +
-  coord_flip() + labs(fill = "Simulation") +
-  scale_fill_manual(values = c("mediumpurple2", "seagreen2", "springgreen3", "seagreen4", "darkgreen",
-                               "skyblue2", "dodgerblue1")) +
-  theme(axis.title = element_blank(),
-        axis.text.x.bottom = element_text(size = 12),
-        axis.text.y.left = element_text(size = 12),
-        panel.background = element_blank(),
-        panel.grid.major = element_line(colour = "gray85",
-                                        size = 0.5),
-        panel.grid.minor = element_line(colour = "gray85",
-                                        size = 0.5),
-        axis.ticks = element_blank(),
-        legend.position = c(0.85, 0.4),
-        legend.background = element_rect(size = 0.1, colour = "Black"),
-        legend.key = element_blank(),
-        legend.key.height = unit(1, "cm"),
-        legend.key.width = unit(1, "cm"),
-        legend.text = element_text(color = "gray20", size = 12),
-        legend.title = element_text(size = 12)) +
-  guides(fill = guide_legend(reverse=TRUE))
-
-### creating rank corrplot
-# creating summary data table for each regression
-response <- summary(diffusion_lm)
-for(i in 1:length(response)){
-  var <- paste("R", i, sep = "")
-  res <- data.frame(response[[i]]$coefficients)
-  res <- data.table(ID = 1:(nrow(res)-1), Variable = rownames(res)[-1], data.table(res)[-1])
-  res <- res[order(abs(res$Estimate), decreasing = T)]
-  assign(var, res)
-}
-
-## create data table based on ID (ranks)
-ranks <- data.frame(D_01_100_50 = R1$ID, D_1_50_50 = R2$ID, D_1_100_50 = R3$ID, D_1_50_70 = R4$ID,
-                    D_1_100_70 = R5$ID, D_5_50_70 = R6$ID, D_5_100_70 = R7$ID)[1:5,]
-
-#### Jaccard rank correlation
-jaccard <- function(a, b) {
-  intersection = length(intersect(a, b))
-  union = length(a) + length(b) - intersection
-  return (intersection/union)
-}
-####
-list <- c("D_01_100_50", "D_1_50_50", "D_1_100_50", "D_1_50_70","D_1_100_70",
-          "D_5_50_70", "D_5_100_70")
-rank_corr_plot <- matrix(nrow = length(list), ncol = length(list))
-for(i in 1:length(list)){
-  for(j in 1:length(list)){
-    a <- ranks[, list[i]]
-    b <- ranks[, list[j]]
-    names(a) <- names(b) <- LETTERS[1:nrow(ranks)]
-    rank_corr_plot[i, j] <- jaccard(a, b)
-  }
-}
-colnames(rank_corr_plot) <- rownames(rank_corr_plot) <- list
-
-cor <- cor(ranks, method = "spearman")
-
-rank_corr_plot[lower.tri(rank_corr_plot)] <- cor[lower.tri(cor)]
-
-corrplot(rank_corr_plot, method = "number", tl.col = "black", tl.offset = 0.4,
-         cl.align.text = "l", tl.srt = 90, addgrid.col = "black", number.cex = 1.5,
-         tl.cex = 1.5)
-
+################################################ End of script ################################################
 
 
 

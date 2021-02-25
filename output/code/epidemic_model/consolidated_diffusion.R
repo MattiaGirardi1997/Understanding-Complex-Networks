@@ -1,7 +1,7 @@
 library(data.table)
 
 # calculate mean of diffusion
-files <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=TRUE)[11:20]
+files <- list.files(path = "data/diffusion", pattern="*.csv", full.names=TRUE)[11:20]
 names <- list.files(path = "removed_loops/diffusion", pattern="*.csv", full.names=FALSE)[11:20]
 files
 

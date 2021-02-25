@@ -22,7 +22,7 @@ create.igraph.object <- function(network){
 #' Average Path Lenght, Hierarchy, Density
 #' @export
 #' @import data.table, DescTools, igraph
-compute.measures <- function(igraph.network, i, data = fread("removed_loops/output/removed_loops_table.csv")){
+compute.measures <- function(igraph.network, i, data = fread("output/master_measures.csv")){
   if(length(E(igraph.network)) == 0){
     network_name <- data[i, Name]
     measures <- data.frame(ID = i, Name = network_name, Nodes = NA, Edges = NA,
@@ -141,7 +141,7 @@ compute.measures <- function(igraph.network, i, data = fread("removed_loops/outp
 #' @return data table
 #' @export
 #' @import data.table
-append.measures <- function(measures, i, path = "removed_loops/output/removed_loops_measures.csv"){
+append.measures <- function(measures, i, path = "output/master_measures.csv"){
   if (i == 1){
     write.table(measures, file = path, sep = ",", col.names = TRUE, row.names = FALSE)
   } else {

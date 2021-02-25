@@ -299,11 +299,9 @@ def watts_strogatz_network(number_of_nodes, number_neighbors,
     return adjacency
 
 
-
-
 import os
-os.chdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt')
-files = os.listdir('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/txt')[83:490]
+os.chdir('~/Desktop/understanding_complex_networks/data/final_data_txt')
+files = os.listdir('~/Desktop/understanding_complex_networks/data/final_data_txt')
 import pandas as pd
 
 for filename in files:
@@ -316,10 +314,10 @@ for filename in files:
                  'Complexity': [complexity]
                  }
      df = pd.DataFrame(measures, columns = ['Name','Entropy', 'Complexity'])
-     if filename == 'metabolic_networks_from_kegg_(2006)_7.txt':
-         df.to_csv('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/output/complexity_and_entropy_measures.csv')
+     if filename == files[0]:
+         df.to_csv('~/Desktop/understanding_complex_networks/output/complexity_and_entropy_measures.csv')
      else:
-         df.to_csv('/Users/mattia/Desktop/Bachelor Thesis/code/bachelor_thesis/removed_loops/output/complexity_and_entropy_measures.csv', mode='a', header=False)
+         df.to_csv('~/Desktop/understanding_complex_networks/output/complexity_and_entropy_measures.csv', mode='a', header=False)
 
 
 
