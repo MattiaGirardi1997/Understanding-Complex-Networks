@@ -14,7 +14,8 @@ install.packages(list.of.packages[!(list.of.packages %in% installed.packages()[,
 sapply(list.of.packages, library, character.only = TRUE)
 rm(list.of.packages)
 
-#### 1) Imported data in R scripts from "input/code" and saved in "data/all_data"
+#### 1) Imported data in R scripts from "input/code/import_netzschleuder_data.R" and
+#       "input/code/import_OLP_data.R"; saved in "data/all_data"
 
 #### 2) Removed loops, simplified networks in script "data/code/removed_loops.R";
 #       results were saved to "data/final_data"; the network specifications were saved in
@@ -32,14 +33,15 @@ rm(list.of.packages)
 
 #### 7) create measure corrplot and identify highly correlated indices ####
 #### correlation matrix
-# corrplot
+master_data <- fread("output/master_measures.csv")
+
+### create corrplot
 cor <- cor(master_data[, 4:ncol(master_data)], use = "complete.obs")
 
 corrplot(cor, method = "color", tl.col = "black", tl.offset = 0.5,
          cl.align.text = "l", addgrid.col = "black", tl.cex = 0.9)
 
-# highly correlated
-master_data <- fread("output/master_measures.csv")
+### investigate correlation
 # ensure the results are repeatable
 set.seed(1234)
 # calculate correlation matrix
@@ -52,9 +54,9 @@ highlyCorrelated <- findCorrelation(correlationMatrix, cutoff = 0.75)
 names(master_data[,4:ncol(master_data)])[print(highlyCorrelated)]
 
 
-#### 8) Machine Learning
 
-#### 8) Machine Learning
+
+#### 8) Machine Learning ####
 # 8.1) Classification ####
 #### load in master
 master_data <- fread("output/master_measures.csv")
@@ -188,9 +190,9 @@ ggplot(res, aes(x = Variable, y = value, fill = variable)) +
   geom_hline(yintercept = 0, color = "gray20", size=0.5)
 
 
-#### 9) Epidemic Model
 
-#### 9) Epidemic Model
+
+#### 9) Epidemic Model ####
 # 9.1) Diffusion descriptives ####
 # load diffusion results
 D_01_100_50 <- fread("output/diffusion/consolidated/0.1% starting_100% prob_50% threshold.csv")

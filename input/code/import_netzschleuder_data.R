@@ -20,6 +20,7 @@ A <- c(8, 10, 11, 12, 15, 18, 23, 27, 32, 33, 44:50, 52:63, 70, 72, 75:78, 80:87
        223, 226, 227, 228, 229, 231, 233, 235, 237, 239, 245, 247:254, 259, 261)
 
 netzschleuder_names <- fromJSON("data/netzschleuder_data/netzschleuder_names.json")
+
 netzschleuder_complete <- fromJSON("data/netzschleuder_data/netzschleuder_complete.json")
 
 for (i in (1:length(netzschleuder_names))[-A]){
